@@ -1,17 +1,17 @@
-import {useState} from "react";
-import LogInButton from "./Button/LogInButton.tsx";
+import LogInButton from './buttons/LogInButton.tsx'
+import React from "react";
 
-export default function LogIn() {
+type LogInData = {
+  username: string;
+  isLoggedIn: boolean;
+};
 
-    type LogInData = {
-        username: string,
-        isLoggedIn: boolean,
-    }
+type LogInProps = {
+    logInData: LogInData,
+    setLogInData: React.Dispatch<React.SetStateAction<LogInData>>
+}
 
-    const [logInData, setLogInData] = useState<LogInData>({
-        username: "Anonymous",
-        isLoggedIn: false,
-    })
+export default function LogIn({ logInData, setLogInData }: LogInProps) {
 
     return (
         <>

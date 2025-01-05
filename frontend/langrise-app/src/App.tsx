@@ -1,11 +1,28 @@
 import './App.css'
 import LogIn from './components/LogIn'
+import RevealWordsLists from "./components/RevealWordsLists.tsx";
+import { useState } from "react";
+import RevealWords from "./components/RevealWords.tsx";
 
 
 function App() {
+
+    type LogInData = {
+        username: string,
+        isLoggedIn: boolean,
+    }
+
+    const [logInData, setLogInData] = useState<LogInData>({
+        username: "admin",
+        isLoggedIn: false,
+    })
+
+
     return (
         <>
-            <LogIn/>
+            <LogIn logInData={logInData} setLogInData={setLogInData} />
+            {logInData.isLoggedIn && <RevealWordsLists/>}
+            {logInData.isLoggedIn && <RevealWords wordsListId={1} />}
         </>
     )
 }
