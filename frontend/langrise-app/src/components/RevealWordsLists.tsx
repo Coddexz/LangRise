@@ -1,4 +1,4 @@
-import useFetch from "./services/useFetch.ts";
+import useFetch from "./hooks/useFetch.ts";
 
 
 type WordsList = {
@@ -9,7 +9,7 @@ type WordsList = {
 }
 
 export default function RevealWordsLists() {
-  const { data, error, isLoading } = useFetch<WordsList[]>("/api/words-list/");
+  const { data, error, isLoading } = useFetch<WordsList[]>("/api/words-list");
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;

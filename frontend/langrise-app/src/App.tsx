@@ -4,16 +4,14 @@ import RevealWordsLists from "./components/RevealWordsLists.tsx";
 import { useState } from "react";
 import RevealWords from "./components/RevealWords.tsx";
 
+type LogInData = {
+    username: string,
+    isLoggedIn: boolean,
+}
 
 function App() {
-
-    type LogInData = {
-        username: string,
-        isLoggedIn: boolean,
-    }
-
     const [logInData, setLogInData] = useState<LogInData>({
-        username: "admin",
+        username: "anon",
         isLoggedIn: false,
     })
 
