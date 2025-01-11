@@ -32,7 +32,7 @@ def main() -> None:
 
 def find_venv() -> Union[str, None]:
     for path in os.environ["PATH"].split(os.pathsep):
-        potential_path = os.path.join(path, "python.exe")
+        potential_path = os.path.join(path, "python")
         if os.path.isfile(potential_path):
             if re.search(r'\s', potential_path):
                 potential_path = escape_spaces_in_path(potential_path)
@@ -41,7 +41,7 @@ def find_venv() -> Union[str, None]:
 
 def find_npm() -> Union[str, None]:
     for path in os.environ["PATH"].split(os.pathsep):
-        potential_path = os.path.join(path, "npm.cmd")
+        potential_path = os.path.join(path, "npm")
         if os.path.isfile(potential_path):
             if re.search(r'\s', potential_path):
                 potential_path = escape_spaces_in_path(potential_path)
@@ -56,13 +56,14 @@ def start_server(command: str) -> None:
     if platform.system() == 'Windows':
         os.system(f'start cmd /k "{command}"')
     else:
-        os.system(f'start sh -c "{command}"')
+        os.system(f'gnome-terminal -- bash -c "{command}; exec bash"')
 
 def open_browser_in_incognito(url: str, browser: str = 'chrome') -> None:
     system = platform.system()
     if system == 'Windows':
         os.system(f'start {browser} --incognito "{url}"')
     elif system == 'Linux':
+        browser = 'google-chrome' if browser == 'chrome' else browser
         os.system(f'{browser} --incognito "{url}" &')
     elif system == 'Darwin':  # macOS
         os.system(f'open -na "Google Chrome" --args --incognito "{url}"')
