@@ -5,16 +5,19 @@ import re
 
 
 def main() -> None:
-    npm_path = find_npm()
-    venv_path = find_venv()
+    if platform.system() == 'Windows':
+        npm_path = find_path(final_file_name='npm.cmd')
+        venv_path = find_path(final_file_name='python.exe')
+    else:
+        npm_path = find_path(final_file_name='npm')
+        venv_path = find_path(final_file_name='python')
 
     if npm_path is None:
         print("npm.cmd not found.")
-        raise SystemExit(1)
+        raise FileNotFoundError("npm not found.")
     elif venv_path is None:
-        print("Virtual environment not found.")
-        print(venv_path)
-        raise SystemExit(1)
+        raise FileNotFoundError("python (venv) not found.")
+
     else:
         print("Starting Django development server...")
         manage_py_path = os.path.join(os.getcwd(), "backend", "langrise_project", "manage.py")
@@ -30,18 +33,10 @@ def main() -> None:
         open_browser_in_incognito("http://localhost:5173")
         print('Done.')
 
-def find_venv() -> Union[str, None]:
-    for path in os.environ["PATH"].split(os.pathsep):
-        potential_path = os.path.join(path, "python")
-        if os.path.isfile(potential_path):
-            if re.search(r'\s', potential_path):
-                potential_path = escape_spaces_in_path(potential_path)
-            return potential_path
-    return None
 
-def find_npm() -> Union[str, None]:
+def find_path(final_file_name: str) -> Union[str, None]:
     for path in os.environ["PATH"].split(os.pathsep):
-        potential_path = os.path.join(path, "npm")
+        potential_path = os.path.join(path, final_file_name)
         if os.path.isfile(potential_path):
             if re.search(r'\s', potential_path):
                 potential_path = escape_spaces_in_path(potential_path)

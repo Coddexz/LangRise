@@ -1,11 +1,10 @@
 import React from "react";
 import axios from "axios";
+import { type LogInData, type View} from "../../App.tsx";
 
 type LogInButtonProps = {
-    setLogInData: React.Dispatch<React.SetStateAction<{
-        username: string;
-        isLoggedIn: boolean;
-    }>>;
+    setLogInData: React.Dispatch<React.SetStateAction<LogInData>>,
+    setView: React.Dispatch<React.SetStateAction<View>>
 };
 
 // type Payload = {
@@ -21,7 +20,7 @@ type TokenResponse = {
     refresh: string;
 };
 
-export default function LogInButton({ setLogInData }: LogInButtonProps) {
+export default function LogInButton({ setLogInData, setView }: LogInButtonProps) {
     const handleClick = async () => {
         const username = "admin";
         const password = "admin";
@@ -45,7 +44,9 @@ export default function LogInButton({ setLogInData }: LogInButtonProps) {
             setLogInData({
                 username: username,
                 isLoggedIn: true,
-            });
+            })
+
+            setView('wordsLists')
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 console.error("Authentication failed:", error.response?.data?.message || error.message);

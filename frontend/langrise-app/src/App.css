@@ -40,3 +40,77 @@
 .read-the-docs {
   color: #888;
 }
+
+.listsTile {
+  flex: 1; /* This is not needed with CSS Grid, but harmless */
+  padding: 20px;
+  text-align: center;
+  background-color: #f0f0f0;
+  border: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .listsTile {
+    background-color: #2b2b2b;
+    border: 1px solid #ccc;
+  }
+}
+
+.listsTile:hover {
+  background-color: #888;
+  transform: scale(1.05);
+}
+
+.listsContainer {
+  display: flex;
+  flex-direction: row;
+  /*grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));*/
+  gap: 10px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.listsRow {
+  display: flex;
+  gap: 10px;
+}
+
+table thead tr {
+  background-color: #333333;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: #1e1e1e;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #2e2e2e;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th, table td {
+  border: 1px solid #444444;
+  padding: 8px;
+  text-align: left;
+}
+
+table tbody tr:hover {
+  background-color: #3e3e3e;
+  cursor: text;
+}
+
+table img {
+  max-width: 100px;
+  max-height: 100px;
+  border-radius: 4px;
+}

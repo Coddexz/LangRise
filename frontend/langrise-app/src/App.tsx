@@ -4,23 +4,32 @@ import RevealWordsLists from "./components/RevealWordsLists.tsx";
 import { useState } from "react";
 import RevealWords from "./components/RevealWords.tsx";
 
-type LogInData = {
+export type LogInData = {
     username: string,
     isLoggedIn: boolean,
 }
+
+export type View = 'login' | 'wordsLists' | 'words'
+type wordsListId = number
 
 function App() {
     const [logInData, setLogInData] = useState<LogInData>({
         username: "anon",
         isLoggedIn: false,
     })
-
+    const [view, setView] = useState<View>('login')
+    const [wordsListId, setWordsListId] = useState<wordsListId>(1)
 
     return (
         <>
-            <LogIn logInData={logInData} setLogInData={setLogInData} />
-            {logInData.isLoggedIn && <RevealWordsLists/>}
-            {logInData.isLoggedIn && <RevealWords wordsListId={1} />}
+            {!logInData.isLoggedIn ? (
+                <LogIn logInData={logInData} setLogInData={setLogInData} setView={setView} />
+            ) : (
+                <>
+                    {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView} />}
+                    {view=='words' && <RevealWords wordsListId={wordsListId} setView={setView} />}
+                </>
+            )}
         </>
     )
 }

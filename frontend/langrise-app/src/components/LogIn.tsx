@@ -1,17 +1,15 @@
 import LogInButton from './buttons/LogInButton.tsx'
 import React from "react";
+import { type View, type LogInData } from "../App"
 
-type LogInData = {
-  username: string;
-  isLoggedIn: boolean;
-};
 
-type LogInProps = {
+export type LogInProps = {
     logInData: LogInData,
     setLogInData: React.Dispatch<React.SetStateAction<LogInData>>
+    setView: React.Dispatch<React.SetStateAction<View>>
 }
 
-export default function LogIn({ logInData, setLogInData }: LogInProps) {
+export default function LogIn({ logInData, setLogInData, setView }: LogInProps) {
 
     return (
         <>
@@ -20,7 +18,7 @@ export default function LogIn({ logInData, setLogInData }: LogInProps) {
                 (
                     <>
                         <h2>Please log in to continue</h2>
-                        <LogInButton setLogInData={setLogInData}/>
+                        <LogInButton setLogInData={setLogInData} setView={setView} />
                     </>
                 ) :
                 (
