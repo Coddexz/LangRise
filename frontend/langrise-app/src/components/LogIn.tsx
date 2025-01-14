@@ -13,7 +13,9 @@ export default function LogIn({ logInData, setLogInData, setView }: LogInProps) 
 
     return (
         <>
-            <h1>LangRise</h1>
+            <h1>LangRise </h1>
+            <div><img src='/langrise_logo.webp' alt='logo' className='logo'/></div>
+
             {!logInData.isLoggedIn ?
                 (
                     <>

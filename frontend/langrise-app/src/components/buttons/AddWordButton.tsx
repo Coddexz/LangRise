@@ -4,9 +4,11 @@ import { type Word } from "../RevealWords";
 type AddWordProps = {
     setWordsData: React.Dispatch<React.SetStateAction<Word[] | null | undefined>>
     wordsListId: number
+    wordsChanged: boolean
+    setWordsChanged: React.Dispatch<React.SetStateAction<boolean>>
 };
 
-export default function AddWord({ setWordsData, wordsListId }: AddWordProps) {
+export default function AddWord({ setWordsData, wordsListId, setWordsChanged, wordsChanged }: AddWordProps) {
     const handleClick = () => {
         setWordsData(existingWordsData => {
             const updatedWordsData = existingWordsData || [];
@@ -24,7 +26,7 @@ export default function AddWord({ setWordsData, wordsListId }: AddWordProps) {
                 words_list: wordsListId,
                 image: null,
             };
-
+            if (! wordsChanged) setWordsChanged(true)
             return [...updatedWordsData, newEntry];
         });
     };

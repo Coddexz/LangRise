@@ -26,7 +26,8 @@ function App() {
                 <LogIn logInData={logInData} setLogInData={setLogInData} setView={setView} />
             ) : (
                 <>
-                    {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView} />}
+                    {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView}
+                                                             logInData={logInData} />}
                     {view=='words' && <RevealWords wordsListId={wordsListId} setView={setView} />}
                 </>
             )}

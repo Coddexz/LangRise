@@ -1,9 +1,10 @@
 import useFetch from "./hooks/useFetch.ts"
 import { type View } from "../App"
 import ToWordsListsButton from "./buttons/ToWordsListsButton.tsx"
-import React, {useEffect, useState} from "react"
+import React, { useEffect, useState } from "react"
 import AddWordButton from "./buttons/AddWordButton.tsx"
 import LearnButton from "./buttons/LearnButton.tsx"
+import SaveWordsButton  from "./buttons/SaveWordsButton.tsx"
 
 
 export type Word = {
@@ -61,6 +62,7 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
   const { data, error, isLoading } = useFetch<Word[]>(`/api/words/?words-list=${wordsListId}`)
   const [editingRowId, setEditingRowId] = useState<number | null>(null)
   const [editedRow, setEditedRow] = useState<Word | null>(null)
+  const [wordsChanged, setWordsChanged] = useState(false)
 
   useEffect(() => {
     if (data) {
@@ -93,6 +95,7 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
       setWordsData(updatedData);
       setEditingRowId(null);
       setEditedRow(null);
+      if (! wordsChanged) setWordsChanged(true)
     }
   };
 
@@ -115,6 +118,7 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
       setEditingRowId(null)
       setEditedRow(null)
       setWordsData(wordsData?.filter((word) => word.id !== id))
+      if (! wordsChanged) setWordsChanged(true)
   }
 
 
@@ -125,9 +129,11 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
   return (
       <div className='reveal-words-container'>
           <div className="sticky-buttons-container">
-              <LearnButton wordsData={wordsData}/>
-              <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId}/>
-              <ToWordsListsButton setView={setView}/>
+              <LearnButton wordsData={wordsData} />
+              <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
+                             setWordsChanged={setWordsChanged} />
+              <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged} setWordsChanged={setWordsChanged} />
+              <ToWordsListsButton setView={setView} />
           </div>
           <table>
               <thead>
