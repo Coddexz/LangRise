@@ -2,7 +2,7 @@ import React from "react";
 import { type Word } from "../RevealWords";
 
 type AddWordProps = {
-    setWordsData: React.Dispatch<React.SetStateAction<Word[] | null>>
+    setWordsData: React.Dispatch<React.SetStateAction<Word[] | null | undefined>>
     wordsListId: number
 };
 
@@ -30,7 +30,7 @@ export default function AddWord({ setWordsData, wordsListId }: AddWordProps) {
     };
 
     return (
-        <button onClick={handleClick}>
+        <button onClick={handleClick} id='addWordButton'>
             Add Word
         </button>
     );

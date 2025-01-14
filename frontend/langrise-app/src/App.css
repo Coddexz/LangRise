@@ -82,6 +82,8 @@
 table thead tr {
   background-color: #333333;
   color: #ffffff;
+}
+#words-sort-th {
   cursor: pointer;
 }
 
@@ -113,4 +115,81 @@ table img {
   max-width: 100px;
   max-height: 100px;
   border-radius: 4px;
+}
+
+table button.edit {
+  width: 100px;
+  height: 40px;
+}
+
+th.sorted {
+  position: relative;
+}
+
+th.sorted.ascending::after {
+  content: " ▲";
+  font-size: 12px;
+  color: green;
+}
+
+th.sorted.descending::after {
+  content: " ▼";
+  font-size: 12px;
+  color: darkred;
+}
+
+#addWordButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+#learnButton {
+  background-color: #008cba;
+  color: white;
+}
+
+#toWordsListsButton {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+#addWordButton:hover {
+  background-color: #45a049;
+  box-shadow: 0 4px 8px rgba(0, 128, 0, 0.2);
+}
+
+#learnButton:hover {
+  background-color: #0077a3;
+  box-shadow: 0 4px 8px rgba(0, 139, 186, 0.2);
+}
+
+#toWordsListsButton:hover {
+  background-color: #e0e0e0;
+  box-shadow: 0 4px 8px rgba(33, 33, 33, 0.2);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+.reveal-words-container {
+  margin-top: 80px;
+  padding: 1rem;
+}
+
+.sticky-buttons-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  z-index: 1000;
 }
