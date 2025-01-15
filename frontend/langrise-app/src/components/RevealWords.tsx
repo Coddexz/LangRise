@@ -128,15 +128,27 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
 
   return (
       <div className='reveal-words-container'>
-          <div className="sticky-buttons-container">
-              <LearnButton wordsData={wordsData} />
-              <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
-                             setWordsChanged={setWordsChanged} />
-              <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged} setWordsChanged={setWordsChanged} />
-              <ToWordsListsButton setView={setView} />
+          <div className="navbar">
+              <div className="navbar-left">
+                  <div className="image-container">
+                      <img src="/langrise_logo.webp" alt="logo" className="logo"/>
+                      <p className="image-name">LangRise</p>
+                  </div>
+              </div>
+
+              <div className='navbar-content'>
+                  <div className='navbar-center'>
+                      <LearnButton wordsData={wordsData}/>
+                      <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
+                                     setWordsChanged={setWordsChanged}/>
+                      <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged}
+                                       setWordsChanged={setWordsChanged}/>
+                      <ToWordsListsButton setView={setView}/>
+                  </div>
+              </div>
           </div>
           <table>
-              <thead>
+          <thead>
               <tr>
                   <th className={sortKey === 'word' ? (ascending ? 'sorted ascending' : 'sorted descending') : ''}
                       onClick={() => handleSort("word")} id='words-sort-th'>

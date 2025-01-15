@@ -44,6 +44,7 @@ export default function LogInButton({ setLogInData, setView }: LogInButtonProps)
             setLogInData({
                 username: username,
                 isLoggedIn: true,
+                userId: 1,
             })
 
             setView('wordsLists')

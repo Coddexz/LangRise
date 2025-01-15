@@ -1,5 +1,5 @@
-import React from "react";
-import { type Word } from "../RevealWords";
+import React from "react"
+import { type Word } from "../RevealWords"
 
 type AddWordProps = {
     setWordsData: React.Dispatch<React.SetStateAction<Word[] | null | undefined>>
