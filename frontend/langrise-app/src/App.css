@@ -257,13 +257,13 @@ th.sorted.descending::after {
 }
 
 #saveWordsButton {
-  background-color: #388e3c; /* Slightly darker green */
+  background-color: #388e3c;
   color: white;
 }
 
 #saveWordsButton:hover {
-  background-color: #2e7d32; /* Darker hover effect compared to AddWordButton */
-  box-shadow: 0 4px 8px rgba(0, 100, 0, 0.2); /* Subtle shadow variation */
+  background-color: #2e7d32;
+  box-shadow: 0 4px 8px rgba(0, 100, 0, 0.2);
 }
 
 #saveWordsButton:disabled {
@@ -283,62 +283,70 @@ button:active {
   padding: 1rem;
 }
 
-/*.sticky-buttons-container {*/
-/*  position: fixed;*/
-/*  top: 0;*/
-/*  left: 0;*/
-/*  right: 0;*/
-
-/*  background-color: #333;*/
-/*  color: #fff;*/
-/*  padding: 1rem;*/
-/*  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);*/
-
-/*  display: flex;*/
-/*  gap: 1rem;*/
-/*  justify-content: center;*/
-/*  align-items: center;*/
-
-/*  z-index: 1000;*/
-/*}*/
-
-/*.reveal-words-container button {*/
-/*  width: 120px;*/
-/*  height: 40px;*/
-/*  line-height: 1.5;*/
-/*  font-size: 16px;*/
-/*  border-radius: 5px;*/
-/*}*/
-
-.overlay-active {
-  position: relative;
-  pointer-events: none;
-}
-
-.overlay-active *:not(.form-container) {
-  pointer-events: none;
-}
-
-.overlay {
-  display: none;
-}
-
-.overlay-active .overlay {
-  display: block;
+.modal {
+  font-size: 14px;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 9998;
-  pointer-events: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  max-width: 90%;
+  background: darkslategrey;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  z-index: 9999;
 }
 
-.form-container {
-  z-index: 9999;
-  background: darkred;
+.modal > .header {
+  /*border-bottom: 1px solid gray;*/
+  font-size: 18px;
+  text-align: center;
+  padding: 10px;
+}
+
+.modal > .content {
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.modal > .actions {
+  padding: 10px 5px;
+  margin: auto;
+  text-align: center;
+}
+.actions button {
+  width: 100px;
+  height: 40px;
+  background: #242424;
+  font-size: 16px;
+  border-radius: 5px;
+  margin: 0 5px;
+  text-align: center;
+
+}
+
+.modal > .close {
+  cursor: pointer;
+  position: absolute;
+  display: block;
+  padding: 2px 5px;
+  line-height: 20px;
+  right: -10px;
+  top: -10px;
+  font-size: 24px;
+  background: darkred;
+  border-radius: 18px;
+  border: 1px solid #cfcece;
+}
+
+.popup-content {
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.popup-overlay {
+  z-index: 99999 !important;
+  background: rgba(0, 0, 0, 0.7) !important; /* dimmer backdrop */
+  pointer-events: all !important; /* ensure it grabs clicks */
 }
