@@ -23,6 +23,7 @@
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -55,26 +56,25 @@
   top: 0;
   left: 0;
   right: 0;
-
   background-color: #333;
   color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
+  flex-wrap: wrap;
 }
 
 .navbar-content {
   max-width: 1280px;
   margin: 0 auto;
   padding: 1rem;
-
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .navbar-content button {
@@ -86,25 +86,45 @@
   cursor: pointer;
 }
 
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
+.navbar-left,
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 15px;
+  flex-wrap: wrap;
+}
+
+.navbar-right {
   padding-right: 1.5rem;
 }
 
 .navbar-center {
-  position: absolute; /* Center buttons absolutely */
-  left: 50%; /* Align to the center of the navbar */
-  transform: translateX(-50%); /* Adjust for exact center alignment */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .navbar-left,
+  .navbar-right,
+  .navbar-center {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navbar-content button {
+    width: 90%;
+    max-width: 300px;
+  }
 }
 
 #wordsListsHeader button {
@@ -130,7 +150,7 @@
 }
 
 .listsTile {
-  flex: 1;
+  flex: 1 1 calc(20% - 10px);
   padding: 20px;
   text-align: center;
   background-color: #f0f0f0;

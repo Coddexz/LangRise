@@ -3,12 +3,12 @@ import Popup from 'reactjs-popup'
 import 'reactjs-popup/dist/index.css'
 import { type WordsList } from '../RevealWordsLists'
 
-type AddWordProps = {
-  setWordsLists: React.Dispatch<React.SetStateAction<WordsList[] | null>>
+type AddListButtonProps = {
+  setWordsLists: React.Dispatch<React.SetStateAction<WordsList[] | null | undefined>>
   userId: number
 }
 
-export default function AddList({ setWordsLists, userId }: AddWordProps) {
+export default function AddListButton({ setWordsLists, userId }: AddListButtonProps) {
   const [name, setName] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
