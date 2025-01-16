@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import LogIn from './components/LogIn'
+import RevealWordsLists from "./components/RevealWordsLists.tsx";
+import { useState } from "react";
+import RevealWords from "./components/RevealWords.tsx";
+
+export type LogInData = {
+    username: string,
+    isLoggedIn: boolean,
+    userId: number
+}
+
+export type View = 'login' | 'wordsLists' | 'words'
+type wordsListId = number
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [logInData, setLogInData] = useState<LogInData>({
+        username: "anon",
+        isLoggedIn: false,
+        userId: 0
+    })
+    const [view, setView] = useState<View>('login')
+    const [wordsListId, setWordsListId] = useState<wordsListId>(1)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <>
+            {!logInData.isLoggedIn ? (
+                <LogIn logInData={logInData} setLogInData={setLogInData} setView={setView} />
+            ) : (
+                <>
+                    {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView}
+                                                             logInData={logInData} />}
+                    {view=='words' && <RevealWords wordsListId={wordsListId} setView={setView} />}
+                </>
+            )}
+        </>
+    )
 }
 
 export default App
