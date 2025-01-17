@@ -5,7 +5,7 @@ from .views import WordViewSet, WordsListViewSet
 
 router = DefaultRouter()
 router.register('words', WordViewSet)
-router.register('words-list', WordsListViewSet, basename='words_list')
+router.register('words-lists', WordsListViewSet, basename='words_lists')
 
 urlpatterns = [
     path('', include(router.urls)),
