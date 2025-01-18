@@ -5,6 +5,8 @@ import { type View } from '../App'
 import { type LogInData } from '../App'
 import AddListButton from './buttons/AddListButton'
 import ModifyListsButton from './buttons/ModifyListsButton'
+import {updateList} from "../api/updateList.ts";
+import {deleteList} from "../api/deleteList.ts";
 
 export type WordsList = {
   id: number
@@ -20,13 +22,12 @@ type RevealWordsListsProps = {
 }
 
 export default function RevealWordsLists({ setWordsListId, setView, logInData }: RevealWordsListsProps) {
-  const { data, error, isLoading } = useFetch<WordsList[]>('/api/words-list')
+  const { data, error, isLoading } = useFetch<WordsList[]>('/api/words-lists')
 
   data?.sort((a, b) => new Date(b.date_created || 0).getTime() - new Date(a.date_created || 0).getTime())
 
   const [wordsLists, setWordsLists] = useState<WordsList[] | null | undefined>(null)
   const [editMode, setEditMode] = useState(false)
-  // const [popup, setPopup] = useState<{ type: 'edit' | 'delete', id: number } | null>(null)
   const [newName, setNewName] = useState('')
 
   useEffect(() => {
@@ -41,16 +42,31 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
     setView('words')
   }
 
-  const handleEdit = (id: number) => {
-    const updatedLists = wordsLists?.map(list => list.id === id ? { ...list, name: newName } : list)
-    setWordsLists(updatedLists)
-    // setPopup(null)
+  const handleEdit = async (id: number) => {
+      try {
+          const updatedList: WordsList = await updateList({ id, newName })
+
+          const updatedLists = wordsLists?.map(list =>
+              list.id === id ? { ...list, name: updatedList.name } : list
+          )
+
+          setWordsLists(updatedLists)
+      } catch (error) {
+          console.error('Failed to update the list:', error)
+          alert('Failed to update the list')
+      }
   }
 
-  const handleDelete = (id: number) => {
-    const updatedLists = wordsLists?.filter(list => list.id !== id)
-    setWordsLists(updatedLists)
-    // setPopup(null)
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteList({ id })
+      const updatedLists = wordsLists?.filter(list => list.id !== id)
+      setWordsLists(updatedLists)
+    } catch (error) {
+      console.error('Failed to delete the list:', error)
+      alert('Failed to delete the list')
+    }
   }
 
   return (
@@ -64,7 +80,7 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
         </div>
         <div className="navbar-content">
           <div className="navbar-center">
-            <AddListButton setWordsLists={setWordsLists} userId={logInData.userId} />
+            <AddListButton setWordsLists={setWordsLists} />
             <ModifyListsButton editMode={editMode} setEditMode={setEditMode} />
           </div>
         </div>

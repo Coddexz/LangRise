@@ -18,8 +18,8 @@ export default function AddWord({ setWordsData, wordsListId, setWordsChanged, wo
 
             const newEntry: Word = {
                 id: maxId + 1,
-                word: "",
-                translation: "",
+                word: "New word",
+                translation: "New translation",
                 pronunciation: null,
                 interval: 1,
                 last_reviewed: null,

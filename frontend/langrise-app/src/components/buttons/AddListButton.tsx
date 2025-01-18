@@ -2,26 +2,25 @@ import React, { useState } from 'react'
 import Popup from 'reactjs-popup'
 import 'reactjs-popup/dist/index.css'
 import { type WordsList } from '../RevealWordsLists'
+import {createList} from "../../api/createList.ts";
 
 type AddListButtonProps = {
   setWordsLists: React.Dispatch<React.SetStateAction<WordsList[] | null | undefined>>
-  userId: number
 }
 
-export default function AddListButton({ setWordsLists, userId }: AddListButtonProps) {
+export default function AddListButton({ setWordsLists }: AddListButtonProps) {
   const [name, setName] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setWordsLists(data => {
-      const d = data || []
-      const maxId = d.reduce((max, list) => Math.max(max, list.id), 0)
-      return [
-        { id: maxId + 1, name, date_created: new Date().toISOString(), user: userId },
-        ...d
-      ]
-    })
-    setName('')
+    try {
+      const newList = await createList({ name })
+      setWordsLists(data => [newList, ...(data || [])])
+      setName('')
+    } catch (error) {
+      console.error('Failed to create the list:', error)
+      alert('Failed to create the list')
+    }
   }
 
   return (
@@ -35,7 +34,7 @@ export default function AddListButton({ setWordsLists, userId }: AddListButtonPr
             <form
               onSubmit={e => {
                 handleSubmit(e)
-                close()
+                    .then(close())
               }}
             >
               <label>
