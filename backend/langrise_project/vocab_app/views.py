@@ -17,11 +17,12 @@ class WordViewSet(viewsets.ModelViewSet):
         words_list_id = self.request.query_params.get('words-list', None)
 
         if words_list_id is not None:
-            queryset = Word.objects.filter(words_list=words_list_id, words_list__user=self.request.user)
-            if queryset.exists():
-                return queryset
-            else:
+            try:
+                words_list = WordsList.objects.get(id=words_list_id, user=self.request.user)
+            except WordsList.DoesNotExist:
                 raise NotFound(detail="The requested words list does not exist or you don't have access to it.")
+
+            return Word.objects.filter(words_list=words_list)
         else:
             return Word.objects.filter(words_list__user=self.request.user)
 

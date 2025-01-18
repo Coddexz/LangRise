@@ -59,15 +59,18 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
   const [wordsData, setWordsData] = useState<Word[] | undefined | null>(null)
   const [sortKey, setSortKey] = useState<keyof Word>("last_reviewed")
   const [ascending, setAscending] = useState(true)
-  const { data, error, isLoading } = useFetch<Word[]>(`/api/words/?words-list=${wordsListId}`)
+  const {data, error, isLoading} = useFetch<Word[]>(`/api/words/?words-list=${wordsListId}`)
   const [editingRowId, setEditingRowId] = useState<number | null>(null)
   const [editedRow, setEditedRow] = useState<Word | null>(null)
   const [wordsChanged, setWordsChanged] = useState(false)
+  const [originalWordsData, setOriginalWordsData] = useState<Word[] | null>(null)
 
   useEffect(() => {
     if (data) {
         if (! wordsData) {
-            setWordsData(sortWords(data, sortKey, ascending))
+            const sortedData = sortWords(data, sortKey, ascending)
+            setWordsData(sortedData)
+            setOriginalWordsData(sortedData)
         } else {
             setWordsData(sortWords(wordsData, sortKey, ascending))
     }}
@@ -89,6 +92,12 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
 
   const handleSaveClick = (id: number) => {
     if (wordsData && editedRow) {
+
+        if (!editedRow.word.trim() || !editedRow.translation.trim()) {
+            alert("Word and Translation cannot be empty.")
+            return
+        }
+
       const updatedData = wordsData.map((word) =>
         word.id === id ? editedRow : word
       );
@@ -142,7 +151,8 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
                       <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
                                      setWordsChanged={setWordsChanged}/>
                       <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged}
-                                       setWordsChanged={setWordsChanged}/>
+                                       setWordsChanged={setWordsChanged} originalWordsData={originalWordsData}
+                                       setOriginalWordsData={setOriginalWordsData} wordsListId={wordsListId} />
                       <ToWordsListsButton setView={setView}/>
                   </div>
               </div>

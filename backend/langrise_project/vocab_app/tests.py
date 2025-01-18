@@ -129,6 +129,23 @@ class WordViewSetTestCase(TestCase):
         self.assertTrue(Word.objects.filter(word="Write Updated").exists())
         self.assertFalse(Word.objects.filter(id=self.word2.id).exists())
 
+    def test_create_with_invalid_words_list_id(self):
+        invalid_words_list_id = self.words_list.id + 1000
+        url = f"/api/words/?words-list={invalid_words_list_id}"
+
+        payload = {
+            "add": [
+                {"word": "play", "translation": "grać"}
+            ],
+            "update": [
+                {"id": self.word1.id, "word": "Write Updated", "translation": "pisać zaktualizowane"}
+            ],
+            "delete": [self.word2.id]
+        }
+
+        response = self.client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class WordsListViewSetTests(APITestCase):
     def setUp(self):
@@ -138,6 +155,7 @@ class WordsListViewSetTests(APITestCase):
         # Create test WordsLists
         self.words_list1 = WordsList.objects.create(name="New", user=self.user)
         self.words_list2 = WordsList.objects.create(name="New 2", user=self.user)
+        self.words_list3 = WordsList.objects.create(name="New 3", user=self.user)
 
         # Authenticate the client
         self.client.force_authenticate(user=self.user)
@@ -146,15 +164,17 @@ class WordsListViewSetTests(APITestCase):
         self.list_url = "/api/words-lists/"
         self.detail_url1 = f"/api/words-lists/{self.words_list1.id}/"
         self.detail_url2 = f"/api/words-lists/{self.words_list2.id}/"
+        self.detail_url3 = f"/api/words-lists/{self.words_list3.id}/"
 
     def test_get_all_words_lists(self):
         """Test retrieving all WordsLists."""
         response = self.client.get(self.list_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # Ensure both lists are returned
+        self.assertEqual(len(response.data), 3)  # Ensure all lists are returned
         self.assertEqual(response.data[0]["name"], self.words_list1.name)
         self.assertEqual(response.data[1]["name"], self.words_list2.name)
+        self.assertEqual(response.data[2]['name'], self.words_list3.name)
 
     def test_get_single_words_list(self):
         """Test retrieving a single WordsList."""
@@ -185,3 +205,8 @@ class WordsListViewSetTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(WordsList.objects.filter(id=self.words_list1.id).exists())
+
+    def test_get_empty_words_list(self):
+        """Test retrieving an empty WordsList."""
+        response = self.client.get(self.detail_url3)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

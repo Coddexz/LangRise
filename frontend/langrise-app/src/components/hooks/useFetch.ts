@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "../services/axiosConfig.ts"; // Axios instance with interceptors
+import api from "../../services/axiosConfig.ts"; // Axios instance with interceptors
 
 type FetchState<T> = {
   data: T | null;
