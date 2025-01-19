@@ -21,18 +21,9 @@ export type Word = {
 type RevealWordsProps = {
     wordsListId: number,
     setView: React.Dispatch<React.SetStateAction<View>>
+    setWordsToLearn: React.Dispatch<React.SetStateAction<[] | Word[]>>
+    
 }
-
-export const wordKeys = {
-    id: 'number',
-    word: 'string',
-    translation: 'string',
-    pronunciation: 'string',
-    interval: 'number',
-    last_reviewed: 'string',
-    words_list: 'number',
-    image: 'string',
-} as const
 
 function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Word[] {
   return [...data].sort((a, b) => {
@@ -55,7 +46,7 @@ function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Wo
   });
 }
 
-export default function RevealWords({ wordsListId, setView }: RevealWordsProps) {
+export default function RevealWords({ wordsListId, setView, setWordsToLearn}: RevealWordsProps) {
   const [wordsData, setWordsData] = useState<Word[] | undefined | null>(null)
   const [sortKey, setSortKey] = useState<keyof Word>("last_reviewed")
   const [ascending, setAscending] = useState(true)
@@ -147,7 +138,7 @@ export default function RevealWords({ wordsListId, setView }: RevealWordsProps) 
 
               <div className='navbar-content'>
                   <div className='navbar-center'>
-                      <LearnButton wordsData={wordsData}/>
+                      <LearnButton wordsData={wordsData} setWordsToLearn={setWordsToLearn} setView={setView} />
                       <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
                                      setWordsChanged={setWordsChanged}/>
                       <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged}

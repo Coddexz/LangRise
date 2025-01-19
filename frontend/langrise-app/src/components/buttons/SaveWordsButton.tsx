@@ -62,7 +62,7 @@ export default function SaveWordsButton({
             setWordsChanged(false)
             setOriginalWordsData(wordsData || null)
             alert("Words saved successfully")
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error during save request:", error)
             alert("Error saving words. Check console for details.")
         } finally {
