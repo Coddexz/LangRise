@@ -7,14 +7,18 @@ type LearnButtonProps = {
   wordsData: Word[] | undefined | null
   setWordsToLearn: React.Dispatch<React.SetStateAction<[] | Word[]>>
   setView: React.Dispatch<React.SetStateAction<View>>
+  languageLevel: Level
+  setLanguageLevel: React.Dispatch<React.SetStateAction<Level>>
+  tone: string
+  setTone: React.Dispatch<React.SetStateAction<string>>
 }
 
-export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
+export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | undefined
 
-export default function LearnButton({ wordsData, setWordsToLearn, setView }: LearnButtonProps) {
+export default function LearnButton({ wordsData, setWordsToLearn, setView, languageLevel, setLanguageLevel,
+                                      tone, setTone }: LearnButtonProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [learnMode, setLearnMode] = useState<Learn | "">("")
-  const [level, setLevel] = useState<Level | "">("")
 
   const handleClick = () => {
     if (!wordsData) {
@@ -25,7 +29,7 @@ export default function LearnButton({ wordsData, setWordsToLearn, setView }: Lea
   }
 
   const handleLearn = () => {
-    if (!learnMode || (learnMode === "learn_story" && !level)) {
+    if (!learnMode || (learnMode === "learn_story" && !languageLevel)) {
       alert("Please select a valid mode and level (if required)")
       return
     }
@@ -62,22 +66,33 @@ export default function LearnButton({ wordsData, setWordsToLearn, setView }: Lea
                 </select>
               </label>
               {learnMode === "learn_story" && (
-                <label>
-                  <div>Level:</div>
-                  <select
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value as Level | "")}
-                    style={{ marginLeft: "16px", width: '150px', height: '30px', fontSize: '14px'}}
-                  >
-                    <option value="">-- Select Level --</option>
-                    <option value="A1">A1</option>
-                    <option value="A2">A2</option>
-                    <option value="B1">B1</option>
-                    <option value="B2">B2</option>
-                    <option value="C1">C1</option>
-                    <option value="C2">C2</option>
-                  </select>
-                </label>
+                <>
+                  <label>
+                    <div>Level:</div>
+                    <select
+                      value={languageLevel}
+                      onChange={(e) => setLanguageLevel(e.target.value as Level)}
+                      style={{ marginLeft: "16px", width: '150px', height: '30px', fontSize: '14px'}}
+                    >
+                      <option value="">-- Select Level --</option>
+                      <option value="A1">A1</option>
+                      <option value="A2">A2</option>
+                      <option value="B1">B1</option>
+                      <option value="B2">B2</option>
+                      <option value="C1">C1</option>
+                      <option value="C2">C2</option>
+                    </select>
+                  </label>
+                  <label>
+                    <div>Tone:</div>
+                    <input
+                      type="text"
+                      value={tone}
+                      onChange={(e) => setTone(e.target.value || "")}
+                      style={{ marginLeft: "16px", width: '150px', height: '30px', fontSize: '14px'}}
+                    />
+                  </label>
+                </>
               )}
             </div>
             <div className="actions">

@@ -3,7 +3,7 @@ import { type View } from "../App"
 import ToWordsListsButton from "./buttons/ToWordsListsButton.tsx"
 import React, { useEffect, useState } from "react"
 import AddWordButton from "./buttons/AddWordButton.tsx"
-import LearnButton from "./buttons/LearnButton.tsx"
+import LearnButton, {Level} from "./buttons/LearnButton.tsx"
 import SaveWordsButton  from "./buttons/SaveWordsButton.tsx"
 
 
@@ -22,7 +22,10 @@ type RevealWordsProps = {
     wordsListId: number,
     setView: React.Dispatch<React.SetStateAction<View>>
     setWordsToLearn: React.Dispatch<React.SetStateAction<[] | Word[]>>
-    
+    languageLevel: Level
+    setLanguageLevel: React.Dispatch<React.SetStateAction<Level>>
+    tone: string
+    setTone: React.Dispatch<React.SetStateAction<string>>
 }
 
 function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Word[] {
@@ -46,7 +49,7 @@ function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Wo
   });
 }
 
-export default function RevealWords({ wordsListId, setView, setWordsToLearn}: RevealWordsProps) {
+export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...props}: RevealWordsProps) {
   const [wordsData, setWordsData] = useState<Word[] | undefined | null>(null)
   const [sortKey, setSortKey] = useState<keyof Word>("last_reviewed")
   const [ascending, setAscending] = useState(true)
@@ -138,13 +141,15 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn}: Re
 
               <div className='navbar-content'>
                   <div className='navbar-center'>
-                      <LearnButton wordsData={wordsData} setWordsToLearn={setWordsToLearn} setView={setView} />
+                      <LearnButton wordsData={wordsData} setWordsToLearn={setWordsToLearn} setView={setView}
+                                   languageLevel={props.languageLevel} setLanguageLevel={props.setLanguageLevel}
+                                   tone={props.tone} setTone={props.setTone} />
                       <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
-                                     setWordsChanged={setWordsChanged}/>
+                                     setWordsChanged={setWordsChanged} />
                       <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged}
                                        setWordsChanged={setWordsChanged} originalWordsData={originalWordsData}
                                        setOriginalWordsData={setOriginalWordsData} wordsListId={wordsListId} />
-                      <ToWordsListsButton setView={setView}/>
+                      <ToWordsListsButton setView={setView} />
                   </div>
               </div>
           </div>

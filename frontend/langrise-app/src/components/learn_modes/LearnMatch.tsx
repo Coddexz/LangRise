@@ -140,7 +140,7 @@ export default function LearnMatch({ words }: Props) {
           >
             Check
           </button>
-          <div className="score">Score: {isChecked ? score : 0}</div>
+          {isChecked && <div className="score">Score: {score}</div>}
         </div>
       </div>
   )

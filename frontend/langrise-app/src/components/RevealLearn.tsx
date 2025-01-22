@@ -11,10 +11,11 @@ type RevealLearnProps = {
   setView: React.Dispatch<React.SetStateAction<View>>
   view: View
   wordsToLearn: Word[]
-  level?: Level
+  languageLevel?: Level
+  tone?: string
 }
 
-export default function RevealLearn({ setView, view, wordsToLearn, level }: RevealLearnProps) {
+export default function RevealLearn({ setView, view, wordsToLearn, languageLevel, tone }: RevealLearnProps) {
   let revealLearningMethod
 
   switch (view) {
@@ -28,7 +29,8 @@ export default function RevealLearn({ setView, view, wordsToLearn, level }: Reve
       revealLearningMethod = <LearnWriteWords words={wordsToLearn} />
       break
     case 'learn_story':
-      revealLearningMethod = <LearnStory words={wordsToLearn} level={level || 'A1'} />
+      revealLearningMethod = <LearnStory words={wordsToLearn} language_level={languageLevel ?? 'B1'}
+                                         tone={tone ?? 'Neutral'} />
       break
     default:
       revealLearningMethod = <div>No learning method selected</div>

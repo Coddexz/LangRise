@@ -1,53 +1,198 @@
 import { useEffect, useState } from 'react'
-import { type Word } from "../RevealWords.tsx"
+import { type Word } from '../RevealWords.tsx'
+import api from "../../services/axiosConfig.ts"
 
-type Props = {
-  words: Word[]
-  level: string
+type ParsedQuestion = {
+  text: string
+  correctAnswer: 'True' | 'False' | 'N/A'
 }
 
-export default function LearnStory({ words, level }: Props) {
-  const [story, setStory] = useState('')
-  const [question, setQuestion] = useState('')
-  const [correctAnswer, setCorrectAnswer] = useState('')
-  const [userAnswer, setUserAnswer] = useState('')
-  const [score, setScore] = useState(0)
+type PropsLearnStory = {
+  words: Word[]
+  language_level: string
+  tone: string
+}
 
+export default function LearnStory({ words, language_level, tone }: PropsLearnStory) {
+  const [story, setStory] = useState('')
+  const [parsedQuestions, setParsedQuestions] = useState<ParsedQuestion[]>([])
+  const [userAnswers, setUserAnswers] = useState<string[]>([])
+  const [score, setScore] = useState<undefined | number>(undefined)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  // --------------------------------------------
+  // Fetching the data
+  // --------------------------------------------
   useEffect(() => {
     const fetchStory = async () => {
+      setIsLoading(true)
       try {
-        const response = await fetch('/tasks/?task=chatgpt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ words, level })
+        const response = await api.post('/api/generate-story/', {
+          words: words.map(w => w.word),
+          language_level,
+          tone
         })
-        const data = await response.json()
-        setStory(data.story)
-        setQuestion(data.question)
-        setCorrectAnswer(data.answer)
-      } catch (e) {
+        const data = await response.data
+        setStory(data.story || '')
+
+        const questionsArray = (data.questions || '')
+          .split('\n')
+          .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+
+        const answersArray = (data.answers || '')
+          .split('\n')
+          .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+
+        const combined = questionsArray.map((qText: string, i: number) => {
+          const ansLetter = answersArray[i] || ''
+          let correctAnswer: ParsedQuestion['correctAnswer'] = 'N/A'
+          if (ansLetter.toUpperCase() === 'R') {
+            correctAnswer = 'True'
+          } else if (ansLetter.toUpperCase() === 'F') {
+            correctAnswer = 'False'
+          } else if (ansLetter.toUpperCase() === 'N') {
+            correctAnswer = 'N/A'
+          }
+          return {
+            text: qText,
+            correctAnswer
+          }
+        })
+
+        setParsedQuestions(combined)
+      } catch (error: any) {
+        console.error('Error fetching story:', error)
+        setError('Could not fetch the story. Please try again later.')
+      } finally {
+        setIsLoading(false)
       }
     }
-    fetchStory()
-  }, [words, level])
 
-  const checkAnswer = () => {
-    if (userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase()) {
-      setScore(score + 1)
+    fetchStory()
+  }, [words, language_level, tone])
+
+  // --------------------------------------------
+  // Using Dummy Data for Testing
+  // --------------------------------------------
+  // useEffect(() => {
+  //   setStory(`
+  //     <p>Once upon a time, there was a curious developer who wanted to test their component without fetching data.</p>
+  //     <p><strong>This is the test story</strong>, stored directly in the component!</p>
+  //   `)
+  //
+  //   setParsedQuestions([
+  //     { text: 'Is the story about a developer?', correctAnswer: 'True' },
+  //     { text: 'Is the developer’s name Bob?', correctAnswer: 'N/A' },
+  //     { text: 'Does the developer dislike React?', correctAnswer: 'False' }
+  //   ])
+  // }, [words, language_level, tone])
+
+  const handleAnswerChange = (index: number, value: string) => {
+    setUserAnswers(prev => {
+      const updated = [...prev]
+      updated[index] = value
+      return updated
+    })
+  }
+
+  const getLabelStyle = (questionIndex: number, labelValue: string) => {
+    if (score === undefined) {
+      return {}
     }
-    setUserAnswer('')
+
+    const correctAnswer = parsedQuestions[questionIndex].correctAnswer
+    const userAnswer = userAnswers[questionIndex] || ''
+
+    if (!userAnswer) {
+      if (labelValue === correctAnswer) {
+        return { backgroundColor: 'darkgreen', color: 'white' }
+      } else {
+        return {}
+      }
+    }
+
+    if (labelValue === correctAnswer) {
+      return { backgroundColor: 'darkgreen', color: 'white' }
+    } else {
+      if (labelValue === userAnswer) {
+        return { backgroundColor: 'darkred', color: 'white' }
+      }
+      return {}
+    }
+  }
+
+  const checkAnswers = () => {
+    let newScore = 0
+    parsedQuestions.forEach((q, i) => {
+      const userPick = (userAnswers[i] || '').toLowerCase()
+      if (q.correctAnswer.toLowerCase() === userPick) {
+        newScore++
+      }
+    })
+    setScore(newScore)
   }
 
   return (
-    <div>
+    <div className="learn-container">
+      {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
+      <h2>Story</h2>
       <div dangerouslySetInnerHTML={{ __html: story }} />
-      <div>{question}</div>
-      <input
-        value={userAnswer}
-        onChange={e => setUserAnswer(e.target.value)}
-      />
-      <button onClick={checkAnswer}>Check Answer</button>
-      <div>Score: {score}</div>
+      <h2>Questions</h2>
+      {parsedQuestions.map((q, index) => (
+        <div key={index} style={{ margin: '1rem 0' }}>
+          <p>{`${index + 1}) ${q.text}`}</p>
+          <label style={{ cursor: 'pointer', ...getLabelStyle(index, 'True')}}>
+            <input
+              type="radio"
+              name={`answer-${index}`}
+              value="True"
+              checked={userAnswers[index] === 'True'}
+              onChange={() => handleAnswerChange(index, 'True')}
+            />{' '}
+            True
+          </label>
+          <label style={{ cursor: 'pointer', marginLeft: '1rem', ...getLabelStyle(index, 'False') }}>
+            <input
+              type="radio"
+              name={`answer-${index}`}
+              value="False"
+              checked={userAnswers[index] === 'False'}
+              onChange={() => handleAnswerChange(index, 'False')}
+            />{' '}
+            False
+          </label>
+          <label style={{ cursor: 'pointer', marginLeft: '1rem', ...getLabelStyle(index, 'N/A') }}>
+            <input
+              type="radio"
+              name={`answer-${index}`}
+              value="N/A"
+              checked={userAnswers[index] === 'N/A'}
+              onChange={() => handleAnswerChange(index, 'N/A')}
+            />{' '}
+            N/A
+          </label>
+        </div>
+      ))}
+      {parsedQuestions.length > 0 && (
+        <button
+          className="check-button"
+          onClick={checkAnswers}
+          disabled={score !== undefined}
+        >
+          Check
+        </button>
+      )}
+      {score !== undefined && (
+        <div className="score">
+          Score: {score} / {parsedQuestions.length}
+        </div>
+      )}
+    {isLoading && (
+      <div className="spinner-overlay">
+        <div className="spinner"></div>
+      </div>
+    )}
     </div>
   )
 }
