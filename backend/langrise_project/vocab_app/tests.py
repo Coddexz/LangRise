@@ -210,3 +210,55 @@ class WordsListViewSetTests(APITestCase):
         """Test retrieving an empty WordsList."""
         response = self.client.get(self.detail_url3)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GenerateStoryAPIViewTestCase(APITestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.login(username='testuser', password='password')
+
+        self.url = '/api/generate-story/'
+        self.payload = {
+            "words": ["apple", "journey", "music"],
+            "language_level": "B1",
+            "tone": "Inspiring"
+        }
+        # Authenticate the client
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_generate_story_authenticated(self):
+        """Test endpoint for authenticated user"""
+        response = self.client.post(self.url, data=self.payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("story", response.data)
+        self.assertIn("questions", response.data)
+        self.assertIn("answers", response.data)
+
+    def test_generate_story_unauthenticated(self):
+        """Test endpoint for unauthenticated user"""
+        self.client.logout()
+        response = self.client.post(self.url, data=self.payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_generate_story_missing_words(self):
+        """Test missing words field"""
+        payload = {
+            "language_level": "B1",
+            "tone": "Inspiring"
+        }
+        response = self.client.post(self.url, data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_generate_story_invalid_words(self):
+        """Test invalid words field"""
+        payload = {
+            "words": "not-a-list",
+            "language_level": "B1",
+            "tone": "Inspiring"
+        }
+        response = self.client.post(self.url, data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)

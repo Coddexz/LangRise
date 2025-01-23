@@ -3,35 +3,32 @@ import axios from "axios"
 import Popup from "reactjs-popup"
 import { type LogInData, type View } from "../../App.tsx"
 
-type LogInButtonProps = {
+type RegisterButtonProps = {
     setLogInData: React.Dispatch<React.SetStateAction<LogInData>>,
     setView: React.Dispatch<React.SetStateAction<View>>
 }
 
-type TokenResponse = {
-    access: string
-    refresh: string
-}
-
-export default function LogInButton({ setLogInData, setView }: LogInButtonProps) {
+export default function RegisterButton({ setLogInData, setView }: RegisterButtonProps) {
     const [isPopupOpen, setIsPopupOpen] = useState(false)
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState('')
 
-    const handleClick = async () => {
+    const handleRegister = async () => {
+        if (password !== confirmPassword) {
+            setError("Passwords do not match. Please try again.")
+            return
+        }
+
         try {
-            const response = await axios.post<TokenResponse>("http://localhost:8000/api/token/", {
+            const response = await axios.post("http://localhost:8000/api/register/", {
                 username,
                 password,
             })
-
-            const { access, refresh } = response.data
-
-            localStorage.setItem("access_token", access)
-            localStorage.setItem("refresh_token", refresh)
-
+            console.log(response)
             setLogInData({
                 username: username,
                 isLoggedIn: true,
@@ -41,12 +38,12 @@ export default function LogInButton({ setLogInData, setView }: LogInButtonProps)
             setError('')
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
-                if (error.response?.status === 401) {
-                    setError("Invalid username or password. Please try again.")
+                if (error.response?.status === 400) {
+                    setError("Registration failed. Username may already exist.")
                 } else if (error.response?.status === 500) {
                     setError("A server error occurred. Please try again later.")
                 } else {
-                    setError("Login failed. Please try again.")
+                    setError("Registration failed. Please try again.")
                 }
             } else {
                 setError("An unexpected error occurred. Please try again.")
@@ -57,7 +54,7 @@ export default function LogInButton({ setLogInData, setView }: LogInButtonProps)
     return (
         <>
             <button onClick={() => setIsPopupOpen(true)}>
-                Log In
+                Register
             </button>
             <Popup open={isPopupOpen} onClose={() => setIsPopupOpen(false)} modal nested>
                 {/* @ts-ignore} */}
@@ -66,7 +63,7 @@ export default function LogInButton({ setLogInData, setView }: LogInButtonProps)
                         <button className="close" onClick={close}>
                             &times;
                         </button>
-                        <div className="header">Log In</div>
+                        <div className="header">Register</div>
                         <div className="content">
                             <div>Username:</div>
                             <input
@@ -92,16 +89,32 @@ export default function LogInButton({ setLogInData, setView }: LogInButtonProps)
                                     style={{ height: '20px', width: '20px', marginLeft: '8px' }}
                                 />
                             </div>
+                            <div>Confirm Password:</div>
+                            <input
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                style={{ marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px' }}
+                            />
+                            <div>
+                                Show Confirm Password:
+                                <input
+                                    type="checkbox"
+                                    onChange={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    style={{ height: '20px', width: '20px', marginLeft: '8px' }}
+                                />
+                            </div>
                         </div>
                         <div className="actions">
                             <button onClick={close} style={{ width: 'auto' }}>
                                 Cancel
                             </button>
-                            <button onClick={handleClick} style={{ width: 'auto' }}>
-                                Log In
+                            <button onClick={handleRegister} style={{ width: 'auto' }}>
+                                Register
                             </button>
                         </div>
-                        {error && <div style={{ color: 'orangered', textAlign: 'center' }}>{error}</div>}
+                        {error && <div style={{ color: 'orangered', textAlign: 'center', marginTop: '20px' }}>{error}</div>}
                     </div>
                 )}
             </Popup>

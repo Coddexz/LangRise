@@ -1,10 +1,12 @@
 from rest_framework import viewsets, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import Word, WordsList
 from .serializers import WordSerializer, WordsListSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
+from .gen_ai_api import StoryGenerator
 
 
 # Create your views here.
@@ -104,3 +106,30 @@ class WordsListViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class GenerateStoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Endpoint to generate a story using ChatGPT.
+        Accepts `words`, `language_level`, and `tone` in the request payload.
+        """
+        words = request.data.get('words', None)
+        language_level = request.data.get('language_level', 'B1')
+        tone = request.data.get('tone', 'Neutral')
+
+        if not words or not isinstance(words, list):
+            return Response({'error': "The 'words' field is required and must be a non-empty list."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            generator = StoryGenerator(words=words, language_level=language_level, tone=tone)
+            result = generator.generate_story()
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except RuntimeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(result, status=status.HTTP_200_OK)
