@@ -21,7 +21,7 @@ export default function LogIn({ logInData, setLogInData, setView }: LogInProps) 
                 (
                     <>
                         <h2>Please log in to continue</h2>
-                        <RegisterButton setLogInData={setLogInData} setView={setView} />
+                        <RegisterButton />
                         <LogInButton setLogInData={setLogInData} setView={setView} />
                     </>
                 ) :

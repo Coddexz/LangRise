@@ -33,7 +33,7 @@ function App() {
             ) : (
                 <>
                     {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView}
-                                                             logInData={logInData} />}
+                                                             logInData={logInData} setLogInData={setLogInData} />}
                     {view=='words' && <RevealWords wordsListId={wordsListId} setView={setView}
                                                    setWordsToLearn={setWordsToLearn} languageLevel={languageLevel}
                         setLanguageLevel={setLanguageLevel} tone={tone} setTone={setTone} />}

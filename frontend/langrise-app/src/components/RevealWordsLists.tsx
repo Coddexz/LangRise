@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, {useState, useEffect, SetStateAction} from 'react'
 import useFetch from './hooks/useFetch'
 import Popup from 'reactjs-popup'
 import { type View } from '../App'
 import { type LogInData } from '../App'
 import AddListButton from './buttons/AddListButton'
 import ModifyListsButton from './buttons/ModifyListsButton'
-import {updateList} from "../api/updateList.ts";
-import {deleteList} from "../api/deleteList.ts";
+import {updateList} from "../api/updateList.ts"
+import {deleteList} from "../api/deleteList.ts"
+import LogOutButton from "./buttons/LogOutButton.tsx"
+import UserSettingsButton from "./buttons/UserSettingsButton.tsx";
 
 export type WordsList = {
   id: number
@@ -19,9 +21,10 @@ type RevealWordsListsProps = {
   setWordsListId: React.Dispatch<React.SetStateAction<number>>
   setView: React.Dispatch<React.SetStateAction<View>>
   logInData: LogInData
+  setLogInData: React.Dispatch<SetStateAction<LogInData>>
 }
 
-export default function RevealWordsLists({ setWordsListId, setView, logInData }: RevealWordsListsProps) {
+export default function RevealWordsLists({ setWordsListId, setView, logInData, setLogInData }: RevealWordsListsProps) {
   const { data, error, isLoading } = useFetch<WordsList[]>('/api/words-lists')
 
   data?.sort((a, b) => new Date(b.date_created || 0).getTime() - new Date(a.date_created || 0).getTime())
@@ -43,6 +46,10 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
   }
 
   const handleEdit = async (id: number) => {
+      if (!newName) {
+          alert("The name field cannot be empty.")
+          return
+      }
       try {
           const updatedList: WordsList = await updateList({ id, newName })
 
@@ -85,8 +92,8 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
           </div>
         </div>
         <div className="navbar-right">
-          <button>User Settings</button>
-          <button>Log Out</button>
+          <UserSettingsButton logInData={logInData} setLogInData={setLogInData} />
+          <LogOutButton setLogInData={setLogInData} setView={setView} />
         </div>
       </div>
       <h3>Welcome back {logInData.username}!</h3>
@@ -101,6 +108,27 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
             {word.name}
             {editMode && (
               <div>
+                <Popup trigger={<button>Delete</button>} modal nested>
+                  {/* @ts-ignore */}
+                  {close => (
+                    <div className="modal">
+                      <button className="close" onClick={close}>&times;</button>
+                      <div className="header">Confirm Deletion</div>
+                      <div className="content">
+                        <p>Are you sure you want to delete this list?</p>
+                          <div className="actions">
+                              <button onClick={close}>No</button>
+                              <button onClick={() => {
+                                  handleDelete(word.id);
+                                  close()
+                              }}>
+                                  Yes
+                              </button>
+                          </div>
+                      </div>
+                    </div>
+                  )}
+                </Popup>
                 <Popup trigger={<button>Edit</button>} modal nested>
                   {/* @ts-ignore */}
                   {close => (
@@ -113,29 +141,18 @@ export default function RevealWordsLists({ setWordsListId, setView, logInData }:
                           value={newName}
                           onChange={e => setNewName(e.target.value)}
                           placeholder="New name"
-                          required
+                          required={true}
                           style={{ marginLeft: '16px' }}
                         />
-                        <div className="actions">
-                          <button onClick={() => { handleEdit(word.id); close() }}>Save</button>
-                          <button onClick={close}>Cancel</button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </Popup>
-                <Popup trigger={<button>Delete</button>} modal nested>
-                  {/* @ts-ignore */}
-                  {close => (
-                    <div className="modal">
-                      <button className="close" onClick={close}>&times;</button>
-                      <div className="header">Confirm Deletion</div>
-                      <div className="content">
-                        <p>Are you sure you want to delete this list?</p>
-                        <div className="actions">
-                          <button onClick={() => { handleDelete(word.id); close() }}>Yes</button>
-                          <button onClick={close}>No</button>
-                        </div>
+                          <div className="actions">
+                              <button onClick={close}>Cancel</button>
+                              <button onClick={() => {
+                                  handleEdit(word.id);
+                                  close()
+                              }}>
+                                  Save
+                              </button>
+                          </div>
                       </div>
                     </div>
                   )}
