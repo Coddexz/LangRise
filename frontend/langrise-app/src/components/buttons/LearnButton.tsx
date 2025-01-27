@@ -21,7 +21,7 @@ export default function LearnButton({ wordsData, setWordsToLearn, setView, langu
   const [learnMode, setLearnMode] = useState<Learn | "">("")
 
   const handleClick = () => {
-    if (!wordsData) {
+    if (!wordsData || (Array.isArray(wordsData) && wordsData.length === 0)) {
       alert("No words to learn")
       return
     }

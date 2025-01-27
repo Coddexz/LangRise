@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import WordViewSet, WordsListViewSet, GenerateStoryAPIView
+from .views import RegisterViewSet, WordViewSet, WordsListViewSet, GenerateStoryAPIView
 
 
 router = DefaultRouter()
+router.register('register', RegisterViewSet , basename='register')
 router.register('words', WordViewSet)
 router.register('words-lists', WordsListViewSet, basename='words_lists')
 

@@ -1,23 +1,21 @@
 import React, { useState } from "react"
 import axios from "axios"
 import Popup from "reactjs-popup"
-import { type LogInData, type View } from "../../App.tsx"
 
-type RegisterButtonProps = {
-    setLogInData: React.Dispatch<React.SetStateAction<LogInData>>,
-    setView: React.Dispatch<React.SetStateAction<View>>
-}
 
-export default function RegisterButton({ setLogInData, setView }: RegisterButtonProps) {
+export default function RegisterButton() {
     const [isPopupOpen, setIsPopupOpen] = useState(false)
     const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState('')
+    const [successMessage, setSuccessMessage] = useState('')
 
-    const handleRegister = async () => {
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault()
         if (password !== confirmPassword) {
             setError("Passwords do not match. Please try again.")
             return
@@ -27,14 +25,13 @@ export default function RegisterButton({ setLogInData, setView }: RegisterButton
             const response = await axios.post("http://localhost:8000/api/register/", {
                 username,
                 password,
+                email
             })
             console.log(response)
-            setLogInData({
-                username: username,
-                isLoggedIn: true,
-            })
+            setSuccessMessage("Registration successful. You can now log in.")
+            alert("Registration successful. You can now log in.")
             setIsPopupOpen(false)
-            setView('wordsLists')
+            // setView('wordsLists')
             setError('')
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
@@ -64,57 +61,88 @@ export default function RegisterButton({ setLogInData, setView }: RegisterButton
                             &times;
                         </button>
                         <div className="header">Register</div>
-                        <div className="content">
-                            <div>Username:</div>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                                style={{ marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px' }}
-                            />
-                            <div>Password:</div>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                style={{ marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px' }}
-                            />
+                        <form onSubmit={handleRegister} className="content">
                             <div>
-                                Show Password:
+                                <label htmlFor="username">Username:</label>
                                 <input
-                                    type="checkbox"
-                                    onChange={() => setShowPassword(!showPassword)}
-                                    style={{ height: '20px', width: '20px', marginLeft: '8px' }}
+                                    id="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                    style={{marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px'}}
                                 />
                             </div>
-                            <div>Confirm Password:</div>
-                            <input
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                style={{ marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px' }}
-                            />
                             <div>
-                                Show Confirm Password:
+                                <label htmlFor="email">Email:</label><div></div>
                                 <input
-                                    type="checkbox"
-                                    onChange={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    style={{ height: '20px', width: '20px', marginLeft: '8px' }}
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    style={{marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px'}}
                                 />
                             </div>
-                        </div>
-                        <div className="actions">
-                            <button onClick={close} style={{ width: 'auto' }}>
-                                Cancel
-                            </button>
-                            <button onClick={handleRegister} style={{ width: 'auto' }}>
-                                Register
-                            </button>
-                        </div>
-                        {error && <div style={{ color: 'orangered', textAlign: 'center', marginTop: '20px' }}>{error}</div>}
+                            <div>
+                                <label htmlFor="password">Password:</label>
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    minLength={8}
+                                    pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$"
+                                    title="Password must be at least 8 characters long and include at least one letter,
+                                    one digit, and one special character."
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    style={{marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px'}}
+                                />
+                                <div>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            onChange={() => setShowPassword(!showPassword)}
+                                            style={{ height: '20px', width: '20px'}}
+                                        />
+                                        Show
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="confirmPassword">Confirm Password:</label>
+                                <input
+                                    id="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                    style={{marginLeft: '16px', width: '200px', height: '40px', fontSize: '16px'}}
+                                />
+                                <div>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            onChange={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            style={{ height: '20px', width: '20px'}}
+                                        />
+                                        Show
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="actions">
+                                <button type="button" onClick={close} style={{width: 'auto'}}>
+                                    Cancel
+                                </button>
+                                <button type="submit" style={{width: 'auto'}}>
+                                    Register
+                                </button>
+                            </div>
+                            {error &&
+                                <div style={{color: 'orangered', textAlign: 'center', marginTop: '20px'}}>{error}</div>}
+                            {successMessage && <div
+                                style={{color: 'green', textAlign: 'center', marginTop: '20px'}}>{successMessage}</div>}
+                        </form>
                     </div>
                 )}
             </Popup>
