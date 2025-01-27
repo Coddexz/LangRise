@@ -23,11 +23,30 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+        }
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
+
+
 class WordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Word
         fields = ['id', 'word', 'translation', 'pronunciation','image_data', 'date_added', 'interval', 'last_reviewed',
                   'words_list']
+
 
 class WordsListSerializer(serializers.ModelSerializer):
     class Meta:

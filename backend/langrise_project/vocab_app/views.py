@@ -3,7 +3,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Word, WordsList
-from .serializers import WordSerializer, WordsListSerializer, RegisterSerializer
+from .serializers import WordSerializer, WordsListSerializer, RegisterSerializer, CurrentUserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
 from .gen_ai_api import StoryGenerator
@@ -18,6 +18,20 @@ class RegisterViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = CurrentUserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, *args, **kwargs):
+        serializer = CurrentUserSerializer(request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class WordViewSet(viewsets.ModelViewSet):

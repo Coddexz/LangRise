@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Popup from 'reactjs-popup'
 import 'reactjs-popup/dist/index.css'
 import { type WordsList } from '../RevealWordsLists'
-import {createList} from "../../api/createList.ts";
+import {createList} from "../../api/createList.ts"
 
 type AddListButtonProps = {
   setWordsLists: React.Dispatch<React.SetStateAction<WordsList[] | null | undefined>>
@@ -49,8 +49,8 @@ export default function AddListButton({ setWordsLists }: AddListButtonProps) {
               </label>
               <p></p>
               <div className="actions">
-                <button type="submit">Submit</button>
                 <button type="button" onClick={close}>Cancel</button>
+                <button type="submit">Submit</button>
               </div>
             </form>
           </div>

@@ -51,19 +51,19 @@ export default function LearnFlashcards({words}: Props) {
             <div className="flashcard-face flashcard-back">{showBack ? word.word : '#'.repeat(word.word.length)}</div>
           </div>
         </div>
-        <div className="buttons">
-          <button className="check-button" style={{ backgroundColor: '#28A745', height: '60px', width: '180px' }}
-                  onClick={handleKnow}
-                  onMouseEnter={handleMouseEnter('rgba(0, 128, 0, 0.4)')} onMouseLeave={handleMouseLeave}>
-            I knew it
-          </button>
-          <button className="next-button" style={{ backgroundColor: '#e74c3c', height: '60px', width: '180px' }}
-                  onClick={handleDontKnow}
-                  onMouseEnter={handleMouseEnter('rgba(231, 76, 60, 0.4)')} onMouseLeave={handleMouseLeave}>
-            I didn't know
-          </button>
-        </div>
-        <div className="score">Score: <strong>{score}</strong></div>
+          <div className="buttons">
+              <button className="next-button" style={{backgroundColor: '#e74c3c', height: '60px', width: '180px'}}
+                      onClick={handleDontKnow}
+                      onMouseEnter={handleMouseEnter('rgba(231, 76, 60, 0.4)')} onMouseLeave={handleMouseLeave}>
+                  I didn't know
+              </button>
+              <button className="check-button" style={{backgroundColor: '#28A745', height: '60px', width: '180px'}}
+                      onClick={handleKnow}
+                      onMouseEnter={handleMouseEnter('rgba(0, 128, 0, 0.4)')} onMouseLeave={handleMouseLeave}>
+                  I knew it
+              </button>
+          </div>
+          <div className="score">Score: <strong>{score}</strong></div>
       </div>
   )
 }
