@@ -7,10 +7,12 @@ class Word(models.Model):
     word = models.CharField(max_length=100)
     translation = models.CharField(max_length=100)
     pronunciation = models.CharField(max_length=100, null=True, blank=True)
-    image_data = models.BinaryField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
-    interval = models.IntegerField(default=1)
     last_reviewed = models.DateTimeField(null=True, blank=True)
+    next_review = models.DateTimeField(null=True, blank=True)
+    interval = models.IntegerField(null=True, blank=True)
+    easiness = models.FloatField(null=True, blank=True)
+    repetitions = models.IntegerField(null=True, blank=True)
     words_list = models.ForeignKey('WordsList', on_delete=models.CASCADE)
 
     def __str__(self):

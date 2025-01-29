@@ -262,3 +262,188 @@ class GenerateStoryAPIViewTestCase(APITestCase):
         response = self.client.post(self.url, data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
+
+
+class WordsReviewViewTests(APITestCase):
+
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username="testuser", password="testpassword")
+        self.client.force_authenticate(user=self.user)
+
+        # Create a WordsList for the test user
+        self.words_list = WordsList.objects.create(name="Test List", user=self.user)
+
+        # Create test words associated with the words list
+        self.word1 = Word.objects.create(word="test", translation="test_translation", words_list=self.words_list)
+        self.word2 = Word.objects.create(word="example", translation="example_translation", words_list=self.words_list)
+
+        # Define the URL for the endpoint
+        self.url = "/api/words-review/"
+
+    def test_valid_flashcards_update(self):
+        """
+        Test updating a word repetition with valid data for the 'flashcards' game.
+        """
+        payload = {
+            "flashcards": [
+                {"word_id": self.word1.id, "rating": 3}
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Words updated successfully.")
+        self.assertIn("updated_words", response.data)
+        self.assertEqual(len(response.data["updated_words"]), 1)
+
+        # Check that the word was updated
+        self.word1.refresh_from_db()
+        self.assertIsNotNone(self.word1.next_review)
+        self.assertIsNotNone(self.word1.last_reviewed)
+
+    def test_valid_write_words_update(self):
+        """
+        Test updating a word repetition with valid data for the 'write_words' game.
+        """
+        payload = {
+            "write_words": [
+                {"word_id": self.word1.id, "typed_word": "test"}
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Words updated successfully.")
+        self.assertIn("updated_words", response.data)
+        self.assertEqual(len(response.data["updated_words"]), 1)
+
+        # Check that the word was updated
+        self.word1.refresh_from_db()
+        self.assertIsNotNone(self.word1.next_review)
+
+    def test_invalid_game_type(self):
+        """
+        Test the endpoint with an invalid game type.
+        """
+        payload = {
+            "invalid_game": [
+                {"word_id": self.word1.id, "rating": 3}
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("errors", response.data)
+
+    def test_invalid_rating(self):
+        """
+        Test the endpoint with an invalid rating (greater than max allowed for the game type).
+        """
+        payload = {
+            "flashcards": [
+                {"word_id": self.word1.id, "rating": 10}  # Invalid rating (greater than max allowed)
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("errors", response.data)
+
+    def test_invalid_word_id(self):
+        """
+        Test the endpoint with a non-existent word ID.
+        """
+        payload = {
+            "flashcards": [
+                {"word_id": 9999, "rating": 3}  # Non-existent Word ID
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data['errors'][0])
+
+    def test_missing_required_field(self):
+        """
+        Test the endpoint with a missing required field.
+        """
+        payload = {
+            "flashcards": [
+                {"rating": 3}  # Missing 'word_id'
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("errors", response.data)
+
+    def test_missing_typed_word_in_write_words(self):
+        """
+        Test the 'write_words' game with a missing 'typed_word' field.
+        """
+        payload = {
+            "write_words": [
+                {"word_id": self.word1.id}  # Missing 'typed_word'
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("errors", response.data)
+
+    def test_empty_request(self):
+        """
+        Test sending an empty request.
+        """
+        payload = {}
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_mixed_valid_and_invalid_entries(self):
+        """
+        Test sending a mix of valid and invalid entries in the request.
+        """
+        payload = {
+            "flashcards": [
+                {"word_id": self.word1.id, "rating": 3},  # Valid
+                {"word_id": 9999, "rating": 3}  # Invalid word_id
+            ],
+            "write_words": [
+                {"word_id": self.word2.id, "typed_word": "example"},  # Valid
+                {"word_id": self.word1.id}  # Missing 'typed_word'
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_207_MULTI_STATUS)
+        self.assertIn("updated_words", response.data)
+        self.assertIn("errors", response.data)
+        self.assertEqual(len(response.data["updated_words"]), 2)  # Two words successfully updated
+        self.assertGreater(len(response.data["errors"]), 0)  # Errors present
+
+    def test_unauthenticated_user(self):
+        """
+        Test the endpoint for unauthenticated users.
+        """
+        self.client.logout()
+        payload = {
+            "flashcards": [
+                {"word_id": self.word1.id, "rating": 3}
+            ]
+        }
+
+        response = self.client.post(self.url, data=payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

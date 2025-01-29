@@ -3,6 +3,7 @@ import api from '../services/axiosConfig'
 type WordPayload = {
     word: string
     translation: string
+    id?: number
 }
 
 type PostWordsPayload = {

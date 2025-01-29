@@ -44,8 +44,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 class WordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Word
-        fields = ['id', 'word', 'translation', 'pronunciation','image_data', 'date_added', 'interval', 'last_reviewed',
-                  'words_list']
+        fields = '__all__'
 
 
 class WordsListSerializer(serializers.ModelSerializer):

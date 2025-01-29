@@ -1,12 +1,17 @@
+from logging import exception
+
 from rest_framework import viewsets, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from .models import Word, WordsList
 from .serializers import WordSerializer, WordsListSerializer, RegisterSerializer, CurrentUserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from .gen_ai_api import StoryGenerator
+from .utils import update_word_repetition, compare_word_similarity, get_grade_based_on_similarity
 
 
 # Create your views here.
@@ -157,3 +162,120 @@ class GenerateStoryAPIView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+class WordsReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    GAME_RATING_LIMITS = {
+        'write_words': 5,
+        'story': 4,
+        'match_words': 4,
+        'flashcards': 3,
+    }
+
+    def post(self, request, *args, **kwargs):
+        """
+        Endpoint to update words' repetition data based on user performance.
+
+        Expected request body:
+        {
+            "flashcards": [{ "word_id": 1, "rating": 3 }],
+            "story": [{ "word_id": 2, "rating": 4 }],
+            "match": [{ "word_id": 3, "rating": 4 }],
+            "write_words": [{ "word_id": 4, "typed_word": "example" }]
+        }
+        """
+        updated_words = []
+        errors = []
+
+        try:
+            if not isinstance(request.data, dict) or not request.data.items() or not any(request.data.values()):
+                return Response(
+                    {"error": "Invalid request format. Expected a JSON object."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            for game_type, words in request.data.items():
+                if game_type not in self.GAME_RATING_LIMITS:
+                    errors.append(
+                        {"error": f"Invalid game type '{game_type}'. Valid options are:"
+                                  f"{', '.join(self.GAME_RATING_LIMITS.keys())}"}
+                    )
+                    continue
+
+                max_rating = self.GAME_RATING_LIMITS[game_type]
+
+                for word_data in words:
+                    word_id = word_data.get("word_id")
+                    if not word_id:
+                        errors.append({"error": f"Missing 'word_id' in {game_type} game."})
+                        continue
+
+                    try:
+                        word = Word.objects.get(pk=word_id, words_list__user=request.user)
+                    except Word.DoesNotExist:
+                        errors.append({"error": f"Word with ID {word_id} not found or does not belong to the user."})
+                        continue
+
+                    if game_type == "write_words":
+                        typed_word = word_data.get("typed_word")
+                        if not typed_word or not isinstance(typed_word, str):
+                            errors.append(
+                                {"error": f"Invalid or missing 'typed_word' for word_id {word_id} in write_words game."}
+                            )
+                            continue
+                        similarity_score = compare_word_similarity(word.word, typed_word)
+                        rating = get_grade_based_on_similarity(similarity_score)
+                    else:
+                        rating = word_data.get("rating")
+
+                        if rating is None:
+                            errors.append({"error": f"Missing 'rating' for word_id {word_id} in {game_type} game."})
+                            continue
+
+                        try:
+                            rating = int(rating)
+                        except ValueError:
+                            errors.append({"error": f"Invalid 'rating' for word_id {word_id} in {game_type} game. "
+                                                    f"Must be an integer."})
+                            continue
+
+                    if not (1 <= rating <= max_rating):
+                        errors.append(
+                            {"error": f"Invalid rating {rating} for word_id {word_id} in {game_type} game. "
+                                      f"Max allowed: {max_rating}."}
+                        )
+                        continue
+
+                    # Update word repetition using SuperMemo2
+                    try:
+                        updated_word = update_word_repetition(word, rating)
+                        updated_words.append({
+                            "word_id": word_id,
+                            "next_review": updated_word.next_review
+                        })
+                    except Exception as e:
+                        errors.append({"error": f"Failed to update word_id {word_id}: {str(e)}"})
+
+            # Determine response status
+            if errors and updated_words:
+                return Response({
+                    "message": "Some words updated, but there were errors.",
+                    "updated_words": updated_words,
+                    "errors": errors
+                }, status=status.HTTP_207_MULTI_STATUS)
+
+            elif errors:
+                print(errors)
+                print(updated_words)
+                return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                "message": "Words updated successfully.",
+                "updated_words": updated_words
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": f"Unexpected server error: {str(e)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
