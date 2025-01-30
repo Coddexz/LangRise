@@ -1,24 +1,32 @@
-import React, { useState } from "react"
+import React, {SetStateAction, useState} from "react"
 import Popup from "reactjs-popup"
 import { type Word } from "../RevealWords.tsx"
 import { postWords } from "../../api/postWords"
+import api from "../../services/axiosConfig.ts"
+import sortWords from "../utils/sortWords.ts"
 
 type SaveWordsButtonProps = {
     wordsData: Word[] | undefined | null
+    setWordsData: React.Dispatch<SetStateAction<Word[] | null | undefined>>
     wordsChanged: boolean
     setWordsChanged: React.Dispatch<React.SetStateAction<boolean>>
     originalWordsData: Word[] | null
     setOriginalWordsData: React.Dispatch<React.SetStateAction<Word[] | null>>
     wordsListId: number
+    ascending: boolean
+    sortKey: keyof Word
 }
 
 export default function SaveWordsButton({
     wordsData,
+    setWordsData,
     wordsChanged,
     setWordsChanged,
     originalWordsData,
     setOriginalWordsData,
-    wordsListId
+    wordsListId,
+    ascending,
+    sortKey
 }: SaveWordsButtonProps) {
     const [isPopupOpen, setPopupOpen] = useState(false)
 
@@ -59,8 +67,16 @@ export default function SaveWordsButton({
         const payload = getPayload()
         try {
             await postWords(payload, wordsListId)
+            const updatedWords = await getWords(wordsListId)
+            const updatedFormatedData = updatedWords.map(word => ({
+                ...word,
+                last_reviewed: word.last_reviewed ? new Date(word.last_reviewed) : null,
+                next_review: word.next_review ? new Date(word.next_review) : null
+            }))
+            const sortedUpdatedFormatedData = sortWords(updatedFormatedData, sortKey, ascending)
+            setOriginalWordsData(sortedUpdatedFormatedData)
+            setWordsData(sortedUpdatedFormatedData)
             setWordsChanged(false)
-            setOriginalWordsData(wordsData || null)
             alert("Words saved successfully")
         } catch (error) {
             console.error("Error during save request:", error)
@@ -70,9 +86,19 @@ export default function SaveWordsButton({
         }
     }
 
+    async function getWords(wordsListId: number): Promise<Word[]> {
+        try {
+            const response = await api.get<Word[]>(`/api/words/?words-list=${wordsListId}`);
+            return response.data
+        } catch (error) {
+            console.error("Error fetching words:", error)
+            throw error
+        }
+    }
+
     return (
         <>
-            <button disabled={!wordsChanged} id="saveWordsButton" onClick={handleClick}>
+            <button disabled={!wordsChanged || isPopupOpen} id="saveWordsButton" onClick={handleClick}>
                 Save
             </button>
             <Popup open={isPopupOpen} modal nested>
