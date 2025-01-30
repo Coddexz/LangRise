@@ -10,7 +10,8 @@ LangRise is an application designed to facilitate vocabulary learning through sp
 4. [Endpoints](#endpoints)
 5. [Core Features](#core-features)
 6. [Running the Application](#running-the-application)
-7. [License](#license)
+7. [Example Screenshots](#example-screenshots)
+8. [License](#license)
 
 ---
 
