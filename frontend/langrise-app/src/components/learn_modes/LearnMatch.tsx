@@ -1,8 +1,11 @@
 import { useState, useMemo } from 'react'
 import { type Word } from '../RevealWords'
+import { sendWordReview } from "../../api/sendWordReview.ts";
 
 type Props = {
   words: Word[]
+  isLoading: boolean
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 type SelectedItem = {
@@ -16,7 +19,7 @@ type MatchedPair = {
   correct: boolean
 }
 
-export default function LearnMatch({ words }: Props) {
+export default function LearnMatch({ words, isLoading, setIsLoading }: Props) {
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null)
   const [matchedPairs, setMatchedPairs] = useState<MatchedPair[]>([])
   const [isChecked, setIsChecked] = useState(false)
@@ -75,10 +78,30 @@ export default function LearnMatch({ words }: Props) {
     setTranslationList([...translationList, pairToRemove.translation])
   }
 
-  const handleCheck = () => {
-    setIsChecked(true)
-    setMatchedPairs(matchedPairs.map(p => ({ ...p, correct: p.word.id === p.translation.id })))
-  }
+const handleCheck = async () => {
+    setIsChecked(true);
+    setIsLoading(true);
+
+    const updatedPairs = matchedPairs.map(p => ({
+        ...p,
+        correct: p.word.id === p.translation.id
+    }));
+
+    setMatchedPairs(updatedPairs);
+
+    try {
+        const wordsToSend = updatedPairs.map(p => ({
+            word_id: p.word.id,
+            rating: p.correct ? 4 : 0 as 0 | 4
+        }));
+
+        await sendWordReview('match_words', wordsToSend);
+    } catch (error) {
+        alert(`Error: ${error}`);
+    } finally {
+        setIsLoading(false);
+    }
+};
 
   const score = useMemo(() => {
     return matchedPairs.filter(p => p.correct).length
@@ -135,7 +158,7 @@ export default function LearnMatch({ words }: Props) {
         <div className="buttons">
           <button
               onClick={handleCheck}
-              disabled={isChecked}
+              disabled={isChecked || isLoading}
               className="check-button"
           >
             Check

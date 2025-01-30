@@ -96,8 +96,8 @@ export default function LearnButton({ wordsData, setWordsToLearn, setView, langu
               )}
             </div>
             <div className="actions">
-              <button onClick={handleLearn} style={{ width: 'auto' }}>Start Learning</button>
               <button onClick={close} style={{ width: 'auto' }}>Cancel</button>
+              <button onClick={handleLearn} style={{ width: 'auto' }}>Start Learning</button>
             </div>
           </div>
         )}

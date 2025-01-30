@@ -22,7 +22,6 @@ def update_word_repetition(word: Word, rating: int) -> Word:
     :rtype: Word
     """
     date_now = now()
-    print(date_now)
 
     if not word.last_reviewed:
         sm_result = first_review(quality=rating, review_datetime=date_now)

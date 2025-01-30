@@ -1,15 +1,11 @@
-from logging import exception
-
 from rest_framework import viewsets, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from .models import Word, WordsList
 from .serializers import WordSerializer, WordsListSerializer, RegisterSerializer, CurrentUserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from .gen_ai_api import StoryGenerator
 from .utils import update_word_repetition, compare_word_similarity, get_grade_based_on_similarity
 
@@ -97,7 +93,8 @@ class WordViewSet(viewsets.ModelViewSet):
                         serializer.is_valid(raise_exception=True)
                         self.perform_update(serializer)
                     except Word.DoesNotExist:
-                        raise NotFound(detail="The requested word does not exist or you don't have access to it.")
+                        raise NotFound(detail=f"The requested word word_id={word_id} does not exist or you don't have "
+                                              f"access to it.")
 
             if 'delete' in payload:
                 delete_data = payload['delete']
@@ -241,7 +238,7 @@ class WordsReviewView(APIView):
                                                     f"Must be an integer."})
                             continue
 
-                    if not (1 <= rating <= max_rating):
+                    if not (0 <= rating <= max_rating):
                         errors.append(
                             {"error": f"Invalid rating {rating} for word_id {word_id} in {game_type} game. "
                                       f"Max allowed: {max_rating}."}
@@ -267,8 +264,6 @@ class WordsReviewView(APIView):
                 }, status=status.HTTP_207_MULTI_STATUS)
 
             elif errors:
-                print(errors)
-                print(updated_words)
                 return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({

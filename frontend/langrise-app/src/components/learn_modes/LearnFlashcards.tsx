@@ -1,11 +1,14 @@
-import React, { useState } from 'react'
-import {type Word} from '../RevealWords.tsx'
+import React, {SetStateAction, useState} from 'react'
+import { type Word } from '../RevealWords.tsx'
+import {sendWordReview} from "../../api/sendWordReview.ts";'../../api/sendWordReview.ts'
 
 type Props = {
   words: Word[]
+  isLoading: boolean
+  setIsLoading: React.Dispatch<SetStateAction<boolean>>
 }
 
-export default function LearnFlashcards({words}: Props) {
+export default function LearnFlashcards({words, isLoading, setIsLoading}: Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showBack, setShowBack] = useState(false)
   const [score, setScore] = useState(0)
@@ -27,14 +30,23 @@ export default function LearnFlashcards({words}: Props) {
   const handleFlip = () => setShowBack(!showBack)
   const handleKnow = () => {
     setScore(score + 1)
-    goNext()
+    goNext(3)
   }
   const handleDontKnow = () => {
-    goNext()
+    goNext(0)
   }
-  const goNext = () => {
+  const goNext = async (rating: number) => {
     setShowBack(false)
-    setCurrentIndex(currentIndex + 1)
+    setIsLoading(true)
+    try {
+        const wordsToSend = {word_id: word.id, rating: rating as 0 | 3}
+        await sendWordReview('flashcards', wordsToSend)
+        setCurrentIndex(currentIndex + 1)
+    } catch (error) {
+        alert(`Error: ${error}`)
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   const word = words[currentIndex]
@@ -53,12 +65,12 @@ export default function LearnFlashcards({words}: Props) {
         </div>
           <div className="buttons">
               <button className="next-button" style={{backgroundColor: '#e74c3c', height: '60px', width: '180px'}}
-                      onClick={handleDontKnow}
+                      onClick={handleDontKnow} disabled={isLoading}
                       onMouseEnter={handleMouseEnter('rgba(231, 76, 60, 0.4)')} onMouseLeave={handleMouseLeave}>
                   I didn't know
               </button>
               <button className="check-button" style={{backgroundColor: '#28A745', height: '60px', width: '180px'}}
-                      onClick={handleKnow}
+                      onClick={handleKnow} disabled={isLoading}
                       onMouseEnter={handleMouseEnter('rgba(0, 128, 0, 0.4)')} onMouseLeave={handleMouseLeave}>
                   I knew it
               </button>

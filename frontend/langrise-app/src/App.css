@@ -460,6 +460,10 @@ button:active {
   transform: scale(0.96);
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 .score {
   margin-top: 2rem;
   font-size: 1.5rem;

@@ -12,10 +12,8 @@ export type Word = {
     word: string,
     translation: string,
     pronunciation: string | null,
-    interval: number,
-    last_reviewed: string | null,
-    words_list: number,
-    image: string | null,
+    last_reviewed: Date | null,
+    next_review: Date | null
 }
 
 type RevealWordsProps = {
@@ -33,9 +31,9 @@ function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Wo
     const aValue = a[key] || 0;
     const bValue = b[key] || 0;
 
-    if (key === "last_reviewed") {
-      const aDate = new Date(aValue as string).getTime();
-      const bDate = new Date(bValue as string).getTime();
+    if (key === "last_reviewed" || key === "next_review") {
+      const aDate = aValue instanceof Date ? aValue.getTime() : new Date(aValue as string).getTime();
+      const bDate = bValue instanceof Date ? bValue.getTime() : new Date(bValue as string).getTime();
       return ascending ? aDate - bDate : bDate - aDate;
     }
 
@@ -51,7 +49,7 @@ function sortWords(data: Word[], key: keyof Word, ascending: boolean = true): Wo
 
 export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...props}: RevealWordsProps) {
   const [wordsData, setWordsData] = useState<Word[] | undefined | null>(null)
-  const [sortKey, setSortKey] = useState<keyof Word>("last_reviewed")
+  const [sortKey, setSortKey] = useState<keyof Word>("next_review")
   const [ascending, setAscending] = useState(true)
   const {data, error, isLoading} = useFetch<Word[]>(`/api/words/?words-list=${wordsListId}`)
   const [editingRowId, setEditingRowId] = useState<number | null>(null)
@@ -62,7 +60,12 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...
   useEffect(() => {
     if (data) {
         if (! wordsData) {
-            const sortedData = sortWords(data, sortKey, ascending)
+            const parsedData = data.map(word => ({
+                ...word,
+                last_reviewed: word.last_reviewed ? new Date(word.last_reviewed) : null,
+                next_review: word.next_review ? new Date(word.next_review) : null
+              }));
+            const sortedData = sortWords(parsedData, sortKey, ascending)
             setWordsData(sortedData)
             setOriginalWordsData(sortedData)
         } else {
@@ -144,7 +147,7 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...
                       <LearnButton wordsData={wordsData} setWordsToLearn={setWordsToLearn} setView={setView}
                                    languageLevel={props.languageLevel} setLanguageLevel={props.setLanguageLevel}
                                    tone={props.tone} setTone={props.setTone} />
-                      <AddWordButton setWordsData={setWordsData} wordsListId={wordsListId} wordsChanged={wordsChanged}
+                      <AddWordButton setWordsData={setWordsData} wordsChanged={wordsChanged}
                                      setWordsChanged={setWordsChanged} />
                       <SaveWordsButton wordsData={wordsData} wordsChanged={wordsChanged}
                                        setWordsChanged={setWordsChanged} originalWordsData={originalWordsData}
@@ -168,15 +171,14 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...
                       onClick={() => handleSort("pronunciation")} id='words-sort-th'>
                       Pronunciation
                   </th>
-                  <th className={sortKey === 'interval' ? (ascending ? 'sorted ascending' : 'sorted descending') : ''}
-                      onClick={() => handleSort("interval")} id='words-sort-th'>
-                      Interval
-                  </th>
                   <th className={sortKey === 'last_reviewed' ? (ascending ? 'sorted ascending' : 'sorted descending') : ''}
                       onClick={() => handleSort("last_reviewed")} id='words-sort-th'>
                       Last Reviewed
                   </th>
-                  <th>Image</th>
+                  <th className={sortKey === 'next_review' ? (ascending ? 'sorted ascending' : 'sorted descending') : ''}
+                      onClick={() => handleSort("next_review")} id='words-sort-th'>
+                      Next Review
+                  </th>
                   <th>Actions</th>
               </tr>
               </thead>
@@ -213,36 +215,17 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...
                                   />
                               </td>
                               <td>
-                                  <input
-                                      type="number"
-                                      value={editedRow?.interval || 0}
-                                      onChange={(e) =>
-                                          handleInputChange("interval", parseInt(e.target.value))
-                                      }
-                                  />
+                                  {word.last_reviewed ? word.last_reviewed.toLocaleDateString() : "N/A"}
                               </td>
                               <td>
-                                  <input
-                                      type="date"
-                                      value={editedRow?.last_reviewed || ""}
-                                      onChange={(e) =>
-                                          handleInputChange("last_reviewed", e.target.value)
-                                      }
-                                  />
+                                  {word.next_review ? word.next_review.toLocaleDateString() : "N/A"}
                               </td>
                               <td>
-                                  <input
-                                      type="file"
-                                      value={editedRow?.image || ""}
-                                      onChange={(e) => handleInputChange("image", e.target.value)}
-                                  />
-                              </td>
-                              <td>
-                                  <button className='button edit save' onClick={() => handleSaveClick(word.id)}>Save
-                                  </button>
                                   <button className='button edit cancel' onClick={handleCancelClick}>Cancel</button>
                                   <button className='button edit delete'
                                           onClick={() => handleDeleteClick(word.id)}>Delete
+                                  </button>
+                                  <button className='button edit save' onClick={() => handleSaveClick(word.id)}>Save
                                   </button>
                               </td>
                           </>
@@ -251,9 +234,8 @@ export default function RevealWords({ wordsListId, setView, setWordsToLearn, ...
                               <td>{word.word}</td>
                               <td>{word.translation}</td>
                               <td>{word.pronunciation || "N/A"}</td>
-                              <td>{word.interval}</td>
-                              <td>{word.last_reviewed || "Never"}</td>
-                              <td>{word.image || "N/A"}</td>
+                              <td>{word.last_reviewed ? word.last_reviewed.toLocaleDateString() : "N/A"}</td>
+                              <td>{word.next_review ? word.next_review.toLocaleDateString() : "N/A"}</td>
                               <td>
                                   <button onClick={() => handleEditClick(word.id)}>Edit</button>
                               </td>

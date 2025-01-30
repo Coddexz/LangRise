@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { type Word } from '../RevealWords.tsx'
+import {sendWordReview} from "../../api/sendWordReview.ts";
 
 type Props = {
   words: Word[]
+  isLoading: boolean
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export default function LearnWriteWords({ words }: Props) {
+export default function LearnWriteWords({ words, isLoading, setIsLoading }: Props) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [answer, setAnswer] = useState('')
     const [score, setScore] = useState(0)
@@ -22,10 +25,20 @@ export default function LearnWriteWords({ words }: Props) {
         setShowAnswer(true)
     }
 
-    const goNext = () => {
+    const goNext = async () => {
         setShowAnswer(false)
-        setCurrentIndex(currentIndex + 1)
+        setIsLoading(true)
+        const answerToWord = answer ? answer : '0'
+        const wordToSend = {word_id: word.id, typed_word: answerToWord}
+        try {
+            await sendWordReview('write_words', wordToSend)
+        } catch (error) {
+            alert(`Error: ${error}`)
+        } finally {
+            setIsLoading(false)
+        }
         setAnswer('')
+        setCurrentIndex(currentIndex + 1)
     }
 
     const word = words[currentIndex]
@@ -63,12 +76,12 @@ export default function LearnWriteWords({ words }: Props) {
             <div className="buttons">
                 <button
                     className="check-button"
-                    disabled={showAnswer}
+                    disabled={showAnswer || isLoading}
                     onClick={checkAnswer}
                 >
                     Check
                 </button>
-                <button className="next-button" onClick={goNext}>
+                <button className="next-button" onClick={goNext} disabled={isLoading}>
                     Next
                 </button>
             </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { type Word } from '../RevealWords.tsx'
 import api from "../../services/axiosConfig.ts"
+import {GAME_RATING_LIMITS, sendWordReview} from "../../api/sendWordReview.ts";
 
 type ParsedQuestion = {
   text: string
@@ -11,9 +12,11 @@ type PropsLearnStory = {
   words: Word[]
   language_level: string
   tone: string
+  isLoadingPosting: boolean
+  setIsLoadingPosting: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export default function LearnStory({ words, language_level, tone }: PropsLearnStory) {
+export default function LearnStory({ words, language_level, tone, isLoadingPosting, setIsLoadingPosting }: PropsLearnStory) {
   const [story, setStory] = useState('')
   const [parsedQuestions, setParsedQuestions] = useState<ParsedQuestion[]>([])
   const [userAnswers, setUserAnswers] = useState<string[]>([])
@@ -122,16 +125,36 @@ export default function LearnStory({ words, language_level, tone }: PropsLearnSt
     }
   }
 
-  const checkAnswers = () => {
-    let newScore = 0
-    parsedQuestions.forEach((q, i) => {
-      const userPick = (userAnswers[i] || '').toLowerCase()
-      if (q.correctAnswer.toLowerCase() === userPick) {
-        newScore++
-      }
-    })
-    setScore(newScore)
-  }
+  const checkAnswers = async () => {
+    setIsLoadingPosting(true)
+
+    const totalQuestions = parsedQuestions.length
+    const correctAnswers = parsedQuestions.filter((q, i) =>
+        q.correctAnswer.toLowerCase() === (userAnswers[i] || '').toLowerCase()
+    ).length
+
+    setScore(correctAnswers) // Use correctAnswers directly
+
+    const maxRating = GAME_RATING_LIMITS.story
+    const meanRating = totalQuestions > 0
+        ? Math.round((correctAnswers / totalQuestions) * maxRating)
+        : 0 // Avoid NaN if no questions
+
+    const validRating = Math.max(0, Math.min(meanRating, maxRating))
+
+    const wordsToSend = words.map(w => ({
+      word_id: w.id,
+      rating: validRating as 0 | 1 | 2 | 3 | 4
+    }))
+
+    try {
+      await sendWordReview('story', wordsToSend)
+    } catch (error) {
+      alert(`Error: ${error}`)
+    } finally {
+      setIsLoadingPosting(false)
+    }
+}
 
   return (
     <div className="learn-container">
@@ -178,7 +201,7 @@ export default function LearnStory({ words, language_level, tone }: PropsLearnSt
         <button
           className="check-button"
           onClick={checkAnswers}
-          disabled={score !== undefined}
+          disabled={score !== undefined || isLoadingPosting}
         >
           Check
         </button>

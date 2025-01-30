@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import { type Word } from './RevealWords'
 import { type View } from '../App'
 import LearnFlashcards from './learn_modes/LearnFlashcards.tsx'
@@ -16,21 +16,23 @@ type RevealLearnProps = {
 }
 
 export default function RevealLearn({ setView, view, wordsToLearn, languageLevel, tone }: RevealLearnProps) {
+  const [isLoading, setIsLoading] = useState(false)
   let revealLearningMethod
 
   switch (view) {
     case 'learn_flashcards':
-      revealLearningMethod = <LearnFlashcards words={wordsToLearn} />
+      revealLearningMethod = <LearnFlashcards words={wordsToLearn} isLoading={isLoading} setIsLoading={setIsLoading} />
       break
     case 'learn_match':
-      revealLearningMethod = <LearnMatch words={wordsToLearn} />
+      revealLearningMethod = <LearnMatch words={wordsToLearn} isLoading={isLoading} setIsLoading={setIsLoading} />
       break
     case 'learn_write_words':
-      revealLearningMethod = <LearnWriteWords words={wordsToLearn} />
+      revealLearningMethod = <LearnWriteWords words={wordsToLearn} isLoading={isLoading} setIsLoading={setIsLoading} />
       break
     case 'learn_story':
       revealLearningMethod = <LearnStory words={wordsToLearn} language_level={languageLevel ?? 'B1'}
-                                         tone={tone ?? 'Neutral'} />
+                                         tone={tone ?? 'Neutral'} isLoadingPosting={isLoading}
+                                         setIsLoadingPosting={setIsLoading} />
       break
     default:
       revealLearningMethod = <div>No learning method selected</div>
@@ -40,7 +42,7 @@ export default function RevealLearn({ setView, view, wordsToLearn, languageLevel
   return (
     <div>
       {revealLearningMethod}
-      <button onClick={() => setView('words')}>Go Back</button>
+      <button onClick={() => setView('words')} disabled={isLoading}>Go Back</button>
     </div>
   )
 }
