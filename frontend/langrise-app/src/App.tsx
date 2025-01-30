@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import LogIn from './components/LogIn'
+import RevealWordsLists from "./components/RevealWordsLists.tsx"
+import { useState } from "react"
+import RevealWords from "./components/RevealWords.tsx"
+import { type Word } from "./components/RevealWords.tsx"
+import RevealLearn from "./components/RevealLearn.tsx"
+import { type Level } from "./components/buttons/LearnButton.tsx"
+
+export type LogInData = {
+    username: string,
+    isLoggedIn: boolean,
+}
+export type Learn = 'learn_flashcards' | 'learn_match' | 'learn_write_words' | 'learn_story'
+export type View = 'login' | 'wordsLists' | 'words' | Learn
+type wordsListId = number
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [logInData, setLogInData] = useState<LogInData>({
+        username: "anon",
+        isLoggedIn: false,
+    })
+    const [view, setView] = useState<View>('login')
+    const [wordsListId, setWordsListId] = useState<wordsListId>(1)
+    const [wordsToLearn, setWordsToLearn] = useState<Word[] | []>([])
+    const [languageLevel, setLanguageLevel] = useState<Level>(undefined)
+    const [tone, setTone] = useState('Neutral')
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <>
+            {!logInData.isLoggedIn ? (
+                <LogIn logInData={logInData} setLogInData={setLogInData} setView={setView} />
+            ) : (
+                <>
+                    {view=='wordsLists' && <RevealWordsLists setWordsListId={setWordsListId} setView={setView}
+                                                             logInData={logInData} setLogInData={setLogInData} />}
+                    {view=='words' && <RevealWords wordsListId={wordsListId} setView={setView}
+                                                   setWordsToLearn={setWordsToLearn} languageLevel={languageLevel}
+                        setLanguageLevel={setLanguageLevel} tone={tone} setTone={setTone} />}
+                    {['learn_flashcards', 'learn_match', 'learn_write_words', 'learn_story'].includes(view)
+                        && <RevealLearn view={view} setView={setView} wordsToLearn={wordsToLearn}
+                                        languageLevel={languageLevel} tone={tone} />}
+                </>
+            )}
+        </>
+    )
 }
 
 export default App
