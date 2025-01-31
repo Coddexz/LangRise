@@ -139,6 +139,7 @@ LangRise is an application designed to facilitate vocabulary learning through sp
 - **`GET /api/words-lists/`** - List all word lists.
 - **`POST /api/words-lists/`** - Create a new word list.
 - **`PUT /api/words-lists/<id>/`** - Update a word list.
+- **`DELETE /api/words-lists/<id>/`** - Delete a word list.
 - **`GET /api/words/?words-list=<id>`** - Retrieve words in a specific list.
 - **`POST /api/words/?words-list=<id>`** - Add/Update/Delete words to/from a specific list
 
