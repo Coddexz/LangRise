@@ -2,13 +2,13 @@ import React, {SetStateAction, useState} from 'react'
 import { type Word } from '../RevealWords.tsx'
 import {sendWordReview} from "../../api/sendWordReview.ts";'../../api/sendWordReview.ts'
 
-type Props = {
+type PropsLearnFlashcards = {
   words: Word[]
   isLoading: boolean
   setIsLoading: React.Dispatch<SetStateAction<boolean>>
 }
 
-export default function LearnFlashcards({words, isLoading, setIsLoading}: Props) {
+export default function LearnFlashcards({words, isLoading, setIsLoading}: PropsLearnFlashcards) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showBack, setShowBack] = useState(false)
   const [score, setScore] = useState(0)

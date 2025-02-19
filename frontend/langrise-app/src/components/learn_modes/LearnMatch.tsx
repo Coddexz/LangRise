@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { type Word } from '../RevealWords'
 import { sendWordReview } from "../../api/sendWordReview.ts";
 
-type Props = {
+type PropsLearnMatch = {
   words: Word[]
   isLoading: boolean
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
@@ -19,7 +19,7 @@ type MatchedPair = {
   correct: boolean
 }
 
-export default function LearnMatch({ words, isLoading, setIsLoading }: Props) {
+export default function LearnMatch({ words, isLoading, setIsLoading }: PropsLearnMatch) {
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null)
   const [matchedPairs, setMatchedPairs] = useState<MatchedPair[]>([])
   const [isChecked, setIsChecked] = useState(false)
